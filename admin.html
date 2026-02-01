@@ -2,645 +2,1380 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CMC Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMC Mess Admin Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * { transition: all 0.3s ease; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #f4f7f6, #e8f0f5); }
-        header { background: linear-gradient(135deg, #003366, #004d99); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        header h3 { margin: 0; font-size: 1.5rem; }
-        .btn-group { display: flex; gap: 10px; }
-        .container { padding: 30px 20px; max-width: 1400px; margin: 0 auto; }
-        .filters { background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .filters select, .filters input { padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95rem; }
-        .filters select:focus, .filters input:focus { outline: none; border-color: #003366; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-top: 4px solid #ffcc00; }
-        .stat-card h4 { margin: 0 0 10px 0; color: #666; font-size: 0.9rem; font-weight: 600; }
-        .stat-card .value { font-size: 2.5rem; font-weight: bold; color: #003366; margin: 10px 0; }
-        .stat-card .subtext { font-size: 0.85rem; color: #999; }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .chart-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .chart-container h4 { margin: 0 0 15px 0; color: #003366; }
-        .chart-inner { position: relative; height: 300px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        th, td { padding: 14px 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #003366; color: white; font-weight: 600; }
-        tr:hover { background: #f9f9f9; }
-        .btn { padding: 10px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; border: none; font-size: 0.9rem; font-weight: 600; }
-        .btn-export { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
-        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); }
-        .btn-logout { background: linear-gradient(135deg, #dc3545, #e74c3c); color: white; }
-        .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4); }
-        .rating-badge { padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem; }
-        .rating-badge.high { background: #d4edda; color: #155724; }
-        .rating-badge.med { background: #fff3cd; color: #856404; }
-        .rating-badge.low { background: #f8d7da; color: #721c24; }
-        table h4 { margin: 0; }
-        .feedback-row { display: flex; gap: 30px; margin-bottom: 30px; }
-        .feedback-list { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); flex: 1; }
-        .feedback-list h4 { margin-top: 0; }
-        .feedback-item { padding: 12px; border-left: 3px solid #ffcc00; background: #f9f9f9; margin-bottom: 10px; border-radius: 4px; }
-        .feedback-item .name { font-weight: 600; color: #003366; }
-        .feedback-item .roll { font-size: 0.85rem; color: #999; }
-        .feedback-item .date { font-size: 0.8rem; color: #bbb; }
-        .dropdown-menu { display: none; position: absolute; background: white; border: 2px solid #ddd; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1000; }
-        .dropdown-menu.show { display: block; }
-        .dropdown-menu a { display: block; padding: 10px 15px; color: #333; text-decoration: none; cursor: pointer; border-bottom: 1px solid #eee; }
-        .dropdown-menu a:last-child { border-bottom: none; }
-        .dropdown-menu a:hover { background: #f5f5f5; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #08385a;
+            --primary-light: #1b6ca8;
+            --accent: #ffc83d;
+            --success: #28a745;
+            --warning: #ff9a56;
+            --danger: #e74c3c;
+            --bg1: #f6fafb;
+            --bg2: #eef6f8;
+            --card-bg: #f8fbfc;
+            --text-primary: #22303f;
+            --text-secondary: #6b7280;
+            --border: #e1eef6;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER (light) ===== */
+        header {
+            background: linear-gradient(90deg, #ffffff 0%, #f7fbfc 100%);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(34, 48, 63, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+        .user-info { text-align: right; padding-right: 0.5rem; color: var(--text-secondary); }
+
+        .btn { padding: 0.6rem 1rem; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ff4757); color: white; }
+
+        /* ===== NAVIGATION TABS ===== */
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border);
+            padding: 0 2rem;
+            margin: 0;
+            list-style: none;
+        }
+
+        .nav-tabs li {
+            margin: 0;
+        }
+
+        .nav-tabs a {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tabs a:hover {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .nav-tabs a.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ===== SECTIONS ===== */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #eef6f8 0%, #d4dbe2 100%);
+            border: 1px solid rgba(34,48,63,0.06);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 212, 255, 0.15);
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .subtext {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: linear-gradient(135deg, #f6fbfc 0%, #c9d4dd 100%);
+            border: 1px solid rgba(34,48,63,0.04);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            background: linear-gradient(135deg, #f7fbfc 0%, #dfe6ec 100%);
+            border: 1px solid rgba(34,48,63,0.04);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(0, 212, 255, 0.1);
+            border-bottom: 2px solid var(--border);
+        }
+
+        th {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(0, 200, 150, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(255, 165, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-pending {
+            background: rgba(160, 170, 196, 0.2);
+            color: var(--text-secondary);
+        }
+
+        /* ===== CHARTS ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, #f7fbfc 0%, #d8dee5 100%);
+            border: 1px solid rgba(34,48,63,0.04);
+            border-radius: 12px;
+            padding: 1.75rem;
+        }
+
+        .chart-container h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+
+        /* ===== EXPORT MENU ===== */
+        .export-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .export-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 200px;
+            margin-top: 0.5rem;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
+
+        .export-dropdown.show {
+            display: flex;
+        }
+
+        .export-dropdown a {
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .export-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .export-dropdown a:hover {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--accent);
+            padding-left: 2rem;
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 24, 35, 0.25);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content h2 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+        }
+
+        /* ===== LOGIN SECTION ===== */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            border: 1px solid rgba(34,48,63,0.06);
+            border-radius: 12px;
+            padding: 2.25rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 12px 40px rgba(11, 50, 80, 0.06);
+        }
+
+        .login-box h2 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .login-box p {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .login-box .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-box .btn-primary {
+            width: 100%;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h3>📊 CMC Mess Admin Dashboard</h3>
-        <div class="btn-group">
-            <div style="position: relative;">
-                <button class="btn btn-export" onclick="toggleExportMenu()">📥 Export Report</button>
-                <div id="export-menu" class="dropdown-menu">
-                    <a onclick="exportDailyReport()">📄 Daily Report</a>
-                    <a onclick="exportWeeklyReport()">📊 Weekly Report (7 sheets)</a>
-                    <a onclick="exportMonthlyReport()">📈 Monthly Report (30 sheets)</a>
-                </div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal active">
+    <div class="login-box">
+        <h2>Admin Login</h2>
+        <p>CMC Mess Management System</p>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="admin" required>
             </div>
-            <button class="btn btn-logout" onclick="logout()">Logout</button>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div id="mainDashboard" style="display: none;">
+    <!-- HEADER -->
+    <header>
+        <h1>📊 CMC Mess Admin Dashboard</h1>
+        <div class="header-actions">
+            <div class="user-info">
+                <p>Welcome, <strong id="adminName">Admin</strong></p>
+                <p style="font-size: 0.8rem; margin: 0;">System Administrator</p>
+            </div>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
     </header>
 
+    <!-- NAVIGATION TABS -->
+    <ul class="nav-tabs">
+        <li><a class="nav-link active" onclick="switchTab('billing')">💰 Billing Reports</a></li>
+        <li><a class="nav-link" onclick="switchTab('feedback')">⭐ Feedback Analysis</a></li>
+        <li><a class="nav-link" onclick="switchTab('exports')">📥 Data Exports</a></li>
+    </ul>
+
     <div class="container">
-        <div class="filters">
-            <div>
-                <label for="period" style="margin-right: 10px; color: #666; font-weight: 600;">Period:</label>
-                <select id="period" onchange="updateDashboard()">
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                </select>
-            </div>
-            <div style="flex: 1;"></div>
-            <div style="font-size: 0.9rem; color: #666;">
-                <span id="filter-info">Showing all data</span>
-            </div>
-        </div>
+        <!-- ===== BILLING REPORTS TAB ===== -->
+        <div id="billing" class="tab-content active">
+            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Billing Report</h2>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4>📋 Total Submissions</h4>
-                <div class="value" id="total-count">0</div>
-                <div class="subtext">feedback responses received</div>
+            <div class="filter-section">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="billStartDate" onchange="loadBillingReport()">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="billEndDate" onchange="loadBillingReport()">
+                </div>
+                <div class="form-group">
+                    <label>Tax Rate (%)</label>
+                    <input type="number" id="taxRate" value="0" min="0" max="100" step="0.1" onchange="loadBillingReport()">
+                </div>
+                <button class="btn btn-primary" onclick="exportBillingCSV()">📥 Export CSV</button>
             </div>
-            <div class="stat-card">
-                <h4>⭐ Overall Avg. Rating</h4>
-                <div class="value" id="overall-avg">0.0</div>
-                <div class="subtext">out of 5 stars</div>
-            </div>
-            <div class="stat-card">
-                <h4>👥 Students Participated</h4>
-                <div class="value" id="unique-students">0</div>
-                <div class="subtext">unique students</div>
-            </div>
-            <div class="stat-card">
-                <h4>🍽️ Items Reviewed</h4>
-                <div class="value" id="unique-items">0</div>
-                <div class="subtext">different food items</div>
-            </div>
-        </div>
 
-        <div class="charts-grid">
-            <div class="chart-container">
-                <h4>⭐ Average Rating by Criteria</h4>
-                <div class="chart-inner">
-                    <canvas id="criteriaChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-container">
-                <h4>📈 Daily Submissions Trend</h4>
-                <div class="chart-inner">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-        </div>
+            <!-- BILLING STATS -->
+            <div id="billingStats" class="stats-grid"></div>
 
-        <div class="charts-grid">
-            <div class="chart-container">
-                <h4>🥘 Top 10 Items by Average Rating</h4>
-                <div class="chart-inner">
-                    <canvas id="itemsChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-container">
-                <h4>📊 Meal Type Distribution</h4>
-                <div class="chart-inner">
-                    <canvas id="mealChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="feedback-row">
-            <div class="feedback-list" style="flex: 2;">
-                <h4>📝 Recent Feedback & Submissions</h4>
+            <!-- BILLING TABLE -->
+            <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>Roll Number</th>
-                            <th>Date & Time</th>
-                            <th>Meal</th>
-                            <th>Items</th>
-                            <th>Avg Rating</th>
+                            <th>Date</th>
+                            <th>Breakfast</th>
+                            <th>Lunch</th>
+                            <th>Dinner</th>
+                            <th>Total People</th>
+                            <th>Base Amount (₹)</th>
+                            <th>Tax (₹)</th>
+                            <th>Total Bill (₹)</th>
                         </tr>
                     </thead>
-                    <tbody id="submissions-table"></tbody>
+                    <tbody id="billingBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Select date range to view billing</td></tr>
+                    </tbody>
                 </table>
+            </div>
+
+            <!-- CHARTS -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Daily People Fed Trend</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="billingTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Meal Type Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="mealDistributionChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <h4 style="margin-top: 40px; color: #003366;">📊 Item-wise Analysis</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th>Submissions</th>
-                    <th>Taste</th>
-                    <th>Quality</th>
-                    <th>Quantity</th>
-                    <th>Cleanliness</th>
-                    <th>Overall Rating</th>
-                </tr>
-            </thead>
-            <tbody id="analysis-table"></tbody>
-        </table>
+        <!-- ===== FEEDBACK ANALYSIS TAB ===== -->
+        <div id="feedback" class="tab-content">
+            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Student Feedback Analysis</h2>
+
+            <div class="filter-section">
+                <div class="form-group">
+                    <label>Period</label>
+                    <select id="feedbackPeriod" onchange="loadFeedbackData()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="feedbackDate" onchange="loadFeedbackData()">
+                </div>
+                <button class="btn btn-primary" onclick="exportFeedbackCSV()">📥 Export CSV</button>
+            </div>
+
+            <!-- FEEDBACK STATS -->
+            <div id="feedbackStats" class="stats-grid"></div>
+
+            <!-- FEEDBACK TABLE -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Meal Type</th>
+                            <th>Item Name</th>
+                            <th>Taste</th>
+                            <th>Quality</th>
+                            <th>Quantity</th>
+                            <th>Cleanliness</th>
+                            <th>Avg Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Select period and date to view feedback</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- CHARTS -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Rating Criteria Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="feedbackCriteriaChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Top Rated Items</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="topItemsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Feedback Over Time</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="feedbackTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DATA EXPORTS TAB ===== -->
+        <div id="exports" class="tab-content">
+            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Data Exports</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <!-- BILLING EXPORTS -->
+                <div class="chart-container">
+                    <h3>📊 Billing Data</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Export billing reports in CSV format</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="btn btn-primary" onclick="exportBillingDaily()" style="justify-content: center;">Daily Billing Report</button>
+                        <button class="btn btn-primary" onclick="exportBillingWeekly()" style="justify-content: center;">Weekly Billing Report</button>
+                        <button class="btn btn-primary" onclick="exportBillingMonthly()" style="justify-content: center;">Monthly Billing Report</button>
+                    </div>
+                </div>
+
+                <!-- FEEDBACK EXPORTS -->
+                <div class="chart-container">
+                    <h3>⭐ Feedback Data</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Export feedback reports in CSV format</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="btn btn-primary" onclick="exportFeedbackDaily()" style="justify-content: center;">Daily Feedback Report</button>
+                        <button class="btn btn-primary" onclick="exportFeedbackWeekly()" style="justify-content: center;">Weekly Feedback Report</button>
+                        <button class="btn btn-primary" onclick="exportFeedbackMonthly()" style="justify-content: center;">Monthly Feedback Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        if(sessionStorage.getItem('isAdmin') !== 'true') window.location.href = 'login.html';
+<script>
+    // ===== AUTHENTICATION =====
+    const ADMIN_CREDENTIALS = {
+        username: 'admin',
+        password: 'admin123'
+    };
 
-        let allData = JSON.parse(localStorage.getItem('cmc_feedback') || '[]');
-        let charts = {};
+    function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
 
-        function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
+        if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+            localStorage.setItem('adminLogged', 'true');
+            localStorage.setItem('adminName', username);
+            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('adminName').textContent = username.charAt(0).toUpperCase() + username.slice(1);
+            initializeDashboard();
+        } else {
+            alert('Invalid credentials! Use admin/admin123');
+        }
+    }
 
-        // Clean up data older than 1 month
-        function cleanupOldData() {
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+    function logout() {
+        // Clear session and redirect to central role-selection login immediately
+        try { localStorage.removeItem('adminLogged'); } catch (e) {}
+        try { localStorage.removeItem('adminName'); } catch (e) {}
+        try { localStorage.removeItem('currentUser'); } catch (e) {}
+        location.replace('login.html?force=true');
+    }
+
+    // If user logged in via central login page, respect that session
+    try {
+        const sessionUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (sessionUser && sessionUser.role === 'admin') {
+            localStorage.setItem('adminLogged', 'true');
+            localStorage.setItem('adminName', sessionUser.name || sessionUser.username || 'Admin');
+        }
+    } catch (e) { /* ignore parse errors */ }
+
+    // Check if user is logged in (either via admin modal or central login)
+    if (localStorage.getItem('adminLogged') === 'true') {
+        document.getElementById('loginModal').classList.remove('active');
+        document.getElementById('mainDashboard').style.display = 'block';
+        document.getElementById('adminName').textContent = localStorage.getItem('adminName') || 'Admin';
+    }
+
+    // ===== TAB SWITCHING =====
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Remove active class from all links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+
+        // Add active class to clicked link
+        event.target.classList.add('active');
+
+        if (tabName === 'billing') {
+            setTimeout(() => {
+                if (billingChart) billingChart.resize();
+                if (mealChart) mealChart.resize();
+            }, 100);
+        }
+    }
+
+    let billingChart, mealChart, feedbackCriteriaChart, topItemsChart, feedbackTrendChart;
+
+    // ===== DATA GENERATION (Mock Data) =====
+    function generateMockBillingData() {
+        const data = [];
+        const today = new Date();
+        
+        for (let i = 90; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
             
-            const initialCount = allData.length;
-            allData = allData.filter(sub => new Date(sub.datetime) >= oneMonthAgo);
-            
-            if (allData.length < initialCount) {
-                localStorage.setItem('cmc_feedback', JSON.stringify(allData));
-                console.log(`🗑️ Cleaned up ${initialCount - allData.length} old responses (older than 1 month)`);
+            data.push({
+                date: date.toISOString().split('T')[0],
+                dateReadable: date.toLocaleDateString('en-IN'),
+                breakfast: Math.floor(Math.random() * 200) + 150,
+                lunch: Math.floor(Math.random() * 250) + 200,
+                dinner: Math.floor(Math.random() * 200) + 150
+            });
+        }
+        
+        localStorage.setItem('billingData', JSON.stringify(data));
+        return data;
+    }
+
+    function generateMockFeedbackData() {
+        const items = ['Biryani', 'Dal', 'Rice', 'Vegetables', 'Dosa', 'Idli', 'Sambar', 'Rasam', 'Bread', 'Butter', 'Milk'];
+        const meals = ['Breakfast', 'Lunch', 'Dinner'];
+        const data = [];
+        const today = new Date();
+
+        for (let i = 60; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+
+            for (const meal of meals) {
+                for (let j = 0; j < Math.floor(Math.random() * 5) + 2; j++) {
+                    data.push({
+                        date: date.toISOString().split('T')[0],
+                        dateReadable: date.toLocaleDateString('en-IN'),
+                        mealType: meal,
+                        itemName: items[Math.floor(Math.random() * items.length)],
+                        taste: Math.floor(Math.random() * 5) + 1,
+                        quality: Math.floor(Math.random() * 5) + 1,
+                        quantity: Math.floor(Math.random() * 5) + 1,
+                        cleanliness: Math.floor(Math.random() * 5) + 1
+                    });
+                }
             }
         }
 
-        // Run cleanup on dashboard load
-        cleanupOldData();
+        localStorage.setItem('feedbackData', JSON.stringify(data));
+        return data;
+    }
 
-        function getFilteredData() {
-            const period = document.getElementById('period').value;
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const weekStart = new Date(today);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-            return allData.filter(sub => {
-                const subDate = new Date(sub.datetime);
-                const subDateOnly = new Date(subDate.getFullYear(), subDate.getMonth(), subDate.getDate());
-                if (period === 'today') return subDateOnly.getTime() === today.getTime();
-                if (period === 'week') return subDate >= weekStart;
-                if (period === 'month') return subDate >= monthStart;
-                return true;
-            });
+    function initializeDashboard() {
+        // Generate mock data if not exists
+        if (!localStorage.getItem('billingData')) {
+            generateMockBillingData();
+        }
+        if (!localStorage.getItem('feedbackData')) {
+            generateMockFeedbackData();
         }
 
-        function updateFilterInfo() {
-            const period = document.getElementById('period').value;
-            const now = new Date();
-            const labels = {
-                'all': 'Showing all data (last 30 days)',
-                'today': `Showing data for ${now.toLocaleDateString()}`,
-                'week': `Showing data for the week of ${new Date(now.setDate(now.getDate() - now.getDay())).toLocaleDateString()}`,
-                'month': `Showing data for ${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-            };
-            document.getElementById('filter-info').innerText = labels[period];
-        }
+        // Set default dates
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        function updateDashboard() {
-            updateFilterInfo();
-            const data = getFilteredData();
-            
-            document.getElementById('total-count').innerText = data.length;
+        document.getElementById('billStartDate').valueAsDate = thirtyDaysAgo;
+        document.getElementById('billEndDate').valueAsDate = today;
+        document.getElementById('feedbackDate').valueAsDate = today;
 
-            const itemStats = {};
-            const studentRolls = new Set();
-            const itemNames = new Set();
-            let totalScore = 0;
-            let scoreCount = 0;
+        loadBillingReport();
+    }
 
-            const dailyStats = {};
-            
-            data.forEach(sub => {
-                studentRolls.add(sub.student_roll);
-                sub.items.forEach(item => {
-                    itemNames.add(item.item_name);
-                    if(!itemStats[item.item_name]) {
-                        itemStats[item.item_name] = { count: 0, taste: 0, quality: 0, quantity: 0, cleanliness: 0 };
+    // ===== BILLING FUNCTIONS =====
+    function loadBillingReport() {
+        const startDate = new Date(document.getElementById('billStartDate').value);
+        const endDate = new Date(document.getElementById('billEndDate').value);
+        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+
+        const allData = JSON.parse(localStorage.getItem('billingData') || '[]');
+
+        // Filter data by date range
+        const filteredData = allData.filter(d => {
+            const date = new Date(d.date);
+            return date >= startDate && date <= endDate;
+        });
+
+        // Calculate totals
+        let totalBreakfast = 0, totalLunch = 0, totalDinner = 0;
+        let totalAmount = 0, totalTax = 0, totalBill = 0;
+
+        const tableRows = filteredData.map(d => {
+            const maxPeople = Math.max(d.breakfast, d.lunch, d.dinner);
+            const baseAmount = maxPeople * 150;
+            const tax = (baseAmount * taxRate) / 100;
+            const bill = baseAmount + tax;
+
+            totalBreakfast += d.breakfast;
+            totalLunch += d.lunch;
+            totalDinner += d.dinner;
+            totalAmount += baseAmount;
+            totalTax += tax;
+            totalBill += bill;
+
+            return `
+                <tr>
+                    <td><strong>${d.dateReadable}</strong></td>
+                    <td>${d.breakfast}</td>
+                    <td>${d.lunch}</td>
+                    <td>${d.dinner}</td>
+                    <td>${maxPeople}</td>
+                    <td>₹${baseAmount.toLocaleString('en-IN')}</td>
+                    <td>₹${tax.toFixed(2)}</td>
+                    <td><strong>₹${bill.toFixed(2)}</strong></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('billingBody').innerHTML = tableRows.join('');
+
+        // Update stats
+        const statsHTML = `
+            <div class="stat-card">
+                <h3>👥 Total Breakfast</h3>
+                <div class="value">${totalBreakfast}</div>
+                <div class="subtext">people fed</div>
+            </div>
+            <div class="stat-card">
+                <h3>🍽️ Total Lunch</h3>
+                <div class="value">${totalLunch}</div>
+                <div class="subtext">people fed</div>
+            </div>
+            <div class="stat-card">
+                <h3>🌙 Total Dinner</h3>
+                <div class="value">${totalDinner}</div>
+                <div class="subtext">people fed</div>
+            </div>
+            <div class="stat-card">
+                <h3>💵 Base Amount</h3>
+                <div class="value">₹${totalAmount.toLocaleString('en-IN')}</div>
+                <div class="subtext">subtotal</div>
+            </div>
+            <div class="stat-card">
+                <h3>🧮 Tax Amount</h3>
+                <div class="value">₹${totalTax.toFixed(2)}</div>
+                <div class="subtext">${taxRate}% tax</div>
+            </div>
+            <div class="stat-card">
+                <h3>💰 Total Bill</h3>
+                <div class="value" style="color: var(--success);">₹${totalBill.toFixed(2)}</div>
+                <div class="subtext">final amount</div>
+            </div>
+        `;
+
+        document.getElementById('billingStats').innerHTML = statsHTML;
+
+        // Update charts
+        updateBillingCharts(filteredData, taxRate);
+    }
+
+    function updateBillingCharts(data, taxRate) {
+        // Trend Chart
+        const trendCtx = document.getElementById('billingTrendChart').getContext('2d');
+        if (billingChart) billingChart.destroy();
+
+        billingChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.dateReadable),
+                datasets: [{
+                    label: 'People Fed',
+                    data: data.map(d => Math.max(d.breakfast, d.lunch, d.dinner)),
+                    borderColor: 'rgba(0, 212, 255, 1)',
+                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: 'rgba(0, 212, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
                     }
-                    const s = itemStats[item.item_name];
-                    s.count++;
-                    s.taste += item.taste;
-                    s.quality += item.quality;
-                    s.quantity += item.quantity;
-                    s.cleanliness += item.cleanliness;
-
-                    totalScore += (item.taste + item.quality + item.quantity + item.cleanliness) / 4;
-                    scoreCount++;
-                });
-
-                const dateKey = new Date(sub.datetime).toLocaleDateString();
-                dailyStats[dateKey] = (dailyStats[dateKey] || 0) + 1;
-            });
-
-            document.getElementById('overall-avg').innerText = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "0.0";
-            document.getElementById('unique-students').innerText = studentRolls.size;
-            document.getElementById('unique-items').innerText = itemNames.size;
-
-            // Update tables
-            const tbody = document.getElementById('analysis-table');
-            tbody.innerHTML = '';
-            Object.keys(itemStats).sort().forEach(name => {
-                const s = itemStats[name];
-                const avgRating = ((s.taste + s.quality + s.quantity + s.cleanliness) / (s.count * 4)).toFixed(1);
-                const ratingClass = avgRating >= 3.5 ? 'high' : avgRating >= 2.5 ? 'med' : 'low';
-                const row = `<tr>
-                    <td><strong>${name}</strong></td>
-                    <td>${s.count}</td>
-                    <td><span class="rating-badge ${ratingClass}">${(s.taste / s.count).toFixed(1)}</span></td>
-                    <td><span class="rating-badge ${ratingClass}">${(s.quality / s.count).toFixed(1)}</span></td>
-                    <td><span class="rating-badge ${ratingClass}">${(s.quantity / s.count).toFixed(1)}</span></td>
-                    <td><span class="rating-badge ${ratingClass}">${(s.cleanliness / s.count).toFixed(1)}</span></td>
-                    <td><span class="rating-badge ${ratingClass}">${avgRating}</span></td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-
-            // Recent submissions
-            const submissionsBody = document.getElementById('submissions-table');
-            submissionsBody.innerHTML = '';
-            const recentData = data.slice().reverse().slice(0, 10);
-            recentData.forEach(sub => {
-                const itemCount = sub.items.length;
-                const avgRating = sub.items.reduce((sum, item) => sum + (item.taste + item.quality + item.quantity + item.cleanliness) / 4, 0) / itemCount;
-                const row = `<tr>
-                    <td><strong>${sub.student_name || 'N/A'}</strong></td>
-                    <td>${sub.student_roll || 'N/A'}</td>
-                    <td>${new Date(sub.datetime).toLocaleString()}</td>
-                    <td>${sub.meal_type}</td>
-                    <td>${itemCount} items</td>
-                    <td><span class="rating-badge ${avgRating >= 3.5 ? 'high' : avgRating >= 2.5 ? 'med' : 'low'}">${avgRating.toFixed(1)}</span></td>
-                </tr>`;
-                submissionsBody.innerHTML += row;
-            });
-
-            // Update charts
-            updateCharts(data, itemStats, dailyStats);
-        }
-
-        function updateCharts(data, itemStats, dailyStats) {
-            // Criteria Chart
-            const criteriaCtx = document.getElementById('criteriaChart').getContext('2d');
-            if (charts.criteria) charts.criteria.destroy();
-            charts.criteria = new Chart(criteriaCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Taste', 'Quality', 'Quantity', 'Cleanliness'],
-                    datasets: [{
-                        label: 'Average Rating',
-                        data: [
-                            data.reduce((sum, s) => sum + s.items.reduce((is, i) => is + i.taste, 0), 0) / (data.reduce((sum, s) => sum + s.items.length, 0) || 1),
-                            data.reduce((sum, s) => sum + s.items.reduce((is, i) => is + i.quality, 0), 0) / (data.reduce((sum, s) => sum + s.items.length, 0) || 1),
-                            data.reduce((sum, s) => sum + s.items.reduce((is, i) => is + i.quantity, 0), 0) / (data.reduce((sum, s) => sum + s.items.length, 0) || 1),
-                            data.reduce((sum, s) => sum + s.items.reduce((is, i) => is + i.cleanliness, 0), 0) / (data.reduce((sum, s) => sum + s.items.length, 0) || 1)
-                        ],
-                        backgroundColor: 'rgba(0, 51, 102, 0.8)',
-                        borderColor: 'rgba(0, 51, 102, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 5 } } }
-            });
-
-            // Trend Chart
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            if (charts.trend) charts.trend.destroy();
-            const sortedDates = Object.keys(dailyStats).sort();
-            charts.trend = new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: sortedDates,
-                    datasets: [{
-                        label: 'Submissions per Day',
-                        data: sortedDates.map(d => dailyStats[d]),
-                        borderColor: 'rgba(255, 204, 0, 1)',
-                        backgroundColor: 'rgba(255, 204, 0, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-            });
-
-            // Items Chart (Top 10)
-            const itemsCtx = document.getElementById('itemsChart').getContext('2d');
-            if (charts.items) charts.items.destroy();
-            const topItems = Object.entries(itemStats)
-                .map(([name, s]) => ({ name, avg: (s.taste + s.quality + s.quantity + s.cleanliness) / (s.count * 4) }))
-                .sort((a, b) => b.avg - a.avg)
-                .slice(0, 10);
-            charts.items = new Chart(itemsCtx, {
-                type: 'horizontalBar',
-                data: {
-                    labels: topItems.map(i => i.name),
-                    datasets: [{
-                        label: 'Average Rating',
-                        data: topItems.map(i => i.avg),
-                        backgroundColor: 'rgba(0, 51, 102, 0.8)',
-                        borderColor: 'rgba(0, 51, 102, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, max: 5 } } }
-            });
-
-            // Meal Chart
-            const mealCtx = document.getElementById('mealChart').getContext('2d');
-            if (charts.meal) charts.meal.destroy();
-            const mealStats = {};
-            data.forEach(sub => mealStats[sub.meal_type] = (mealStats[sub.meal_type] || 0) + 1);
-            charts.meal = new Chart(mealCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(mealStats),
-                    datasets: [{
-                        data: Object.values(mealStats),
-                        backgroundColor: ['rgba(0, 51, 102, 0.8)', 'rgba(255, 204, 0, 0.8)', 'rgba(100, 150, 200, 0.8)'],
-                        borderColor: ['rgba(0, 51, 102, 1)', 'rgba(255, 204, 0, 1)', 'rgba(100, 150, 200, 1)'],
-                        borderWidth: 2
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-
-        function exportCSV() {
-            const data = getFilteredData();
-            let csv = "Date,Time,Student Name,Roll Number,Meal,Item,Taste,Quality,Quantity,Cleanliness,Comment\n";
-            data.forEach(sub => {
-                sub.items.forEach(i => {
-                    csv += `${sub.date_readable},${sub.time_readable},"${sub.student_name}","${sub.student_roll}",${sub.meal_type},"${i.item_name}",${i.taste},${i.quality},${i.quantity},${i.cleanliness},"${i.comment.replace(/"/g, '""')}"\n`;
-                });
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `cmc_feedback_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function toggleExportMenu() {
-            const menu = document.getElementById('export-menu');
-            menu.classList.toggle('show');
-        }
-
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('export-menu');
-            const btn = e.target.closest('.btn-export');
-            if (!btn && menu.classList.contains('show')) {
-                menu.classList.remove('show');
+                }
             }
         });
 
-        function exportDailyReport() {
-            const data = getFilteredData();
-            const workbook = XLSX.utils.book_new();
-            
-            // Group by date
-            const byDate = {};
-            data.forEach(sub => {
-                if (!byDate[sub.date_readable]) byDate[sub.date_readable] = [];
-                byDate[sub.date_readable].push(sub);
+        // Meal Distribution Chart
+        const totalBreakfast = data.reduce((sum, d) => sum + d.breakfast, 0);
+        const totalLunch = data.reduce((sum, d) => sum + d.lunch, 0);
+        const totalDinner = data.reduce((sum, d) => sum + d.dinner, 0);
+
+        const mealCtx = document.getElementById('mealDistributionChart').getContext('2d');
+        if (mealChart) mealChart.destroy();
+
+        mealChart = new Chart(mealCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Breakfast', 'Lunch', 'Dinner'],
+                datasets: [{
+                    data: [totalBreakfast, totalLunch, totalDinner],
+                    backgroundColor: [
+                        'rgba(0, 212, 255, 0.8)',
+                        'rgba(0, 200, 150, 0.8)',
+                        'rgba(255, 165, 0, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 212, 255, 1)',
+                        'rgba(0, 200, 150, 1)',
+                        'rgba(255, 165, 0, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
+                }
+            }
+        });
+    }
+
+    function exportBillingCSV() {
+        const startDate = new Date(document.getElementById('billStartDate').value);
+        const endDate = new Date(document.getElementById('billEndDate').value);
+        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+
+        const allData = JSON.parse(localStorage.getItem('billingData') || '[]');
+        const filteredData = allData.filter(d => {
+            const date = new Date(d.date);
+            return date >= startDate && date <= endDate;
+        });
+
+        let csv = 'Date,Breakfast,Lunch,Dinner,Total People,Base Amount (₹),Tax (₹),Total Bill (₹)\n';
+
+        filteredData.forEach(d => {
+            const maxPeople = Math.max(d.breakfast, d.lunch, d.dinner);
+            const baseAmount = maxPeople * 150;
+            const tax = (baseAmount * taxRate) / 100;
+            const bill = baseAmount + tax;
+
+            csv += `${d.dateReadable},${d.breakfast},${d.lunch},${d.dinner},${maxPeople},${baseAmount.toFixed(2)},${tax.toFixed(2)},${bill.toFixed(2)}\n`;
+        });
+
+        downloadCSV(csv, `Billing_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    }
+
+    function exportBillingDaily() {
+        exportBillingCSV();
+    }
+
+    function exportBillingWeekly() {
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        document.getElementById('billStartDate').valueAsDate = sevenDaysAgo;
+        document.getElementById('billEndDate').valueAsDate = today;
+        loadBillingReport();
+        
+        setTimeout(() => exportBillingCSV(), 500);
+    }
+
+    function exportBillingMonthly() {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        document.getElementById('billStartDate').valueAsDate = firstDay;
+        document.getElementById('billEndDate').valueAsDate = today;
+        loadBillingReport();
+
+        setTimeout(() => exportBillingCSV(), 500);
+    }
+
+    // ===== FEEDBACK FUNCTIONS =====
+    function loadFeedbackData() {
+        const period = document.getElementById('feedbackPeriod').value;
+        const date = new Date(document.getElementById('feedbackDate').value);
+
+        const allData = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+
+        let filteredData = [];
+
+        if (period === 'daily') {
+            filteredData = allData.filter(d => d.date === date.toISOString().split('T')[0]);
+        } else if (period === 'weekly') {
+            const weekStart = new Date(date);
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            filteredData = allData.filter(d => {
+                const dDate = new Date(d.date);
+                return dDate >= weekStart && dDate <= weekEnd;
             });
-            
-            Object.keys(byDate).sort().forEach(dateKey => {
-                const records = [];
-                const meals = ['Breakfast', 'Lunch', 'Dinner'];
-                
-                meals.forEach(mealType => {
-                    const mealData = byDate[dateKey].filter(d => d.meal_type === mealType);
-                    if (mealData.length > 0) {
-                        records.push({ // Header row
-                            'Date': dateKey,
-                            'Meal Type': mealType,
-                            'Student Name': '',
-                            'Roll Number': '',
-                            'Items Reviewed': '',
-                            'Avg Taste': '',
-                            'Avg Quality': '',
-                            'Avg Quantity': '',
-                            'Avg Cleanliness': '',
-                            'Overall Rating': ''
-                        });
-                        
-                        mealData.forEach(sub => {
-                            const itemCount = sub.items.length;
-                            const totals = sub.items.reduce((acc, item) => ({
-                                taste: acc.taste + item.taste,
-                                quality: acc.quality + item.quality,
-                                quantity: acc.quantity + item.quantity,
-                                cleanliness: acc.cleanliness + item.cleanliness
-                            }), {taste: 0, quality: 0, quantity: 0, cleanliness: 0});
-                            
-                            records.push({
-                                'Date': dateKey,
-                                'Meal Type': mealType,
-                                'Student Name': sub.student_name,
-                                'Roll Number': sub.student_roll,
-                                'Items Reviewed': sub.items.map(i => i.item_name).join(', '),
-                                'Avg Taste': (totals.taste / itemCount).toFixed(2),
-                                'Avg Quality': (totals.quality / itemCount).toFixed(2),
-                                'Avg Quantity': (totals.quantity / itemCount).toFixed(2),
-                                'Avg Cleanliness': (totals.cleanliness / itemCount).toFixed(2),
-                                'Overall Rating': ((totals.taste + totals.quality + totals.quantity + totals.cleanliness) / (itemCount * 4)).toFixed(2)
-                            });
-                        });
-                    }
-                });
-                
-                const ws = XLSX.utils.json_to_sheet(records);
-                XLSX.utils.book_append_sheet(workbook, ws, 'Daily Report');
+        } else if (period === 'monthly') {
+            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+            filteredData = allData.filter(d => {
+                const dDate = new Date(d.date);
+                return dDate >= monthStart && dDate <= monthEnd;
             });
-            
-            XLSX.writeFile(workbook, `CMC_Daily_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-            document.getElementById('export-menu').classList.remove('show');
         }
 
-        function exportWeeklyReport() {
-            const data = getFilteredData();
-            const workbook = XLSX.utils.book_new();
-            
-            // Group by date
-            const byDate = {};
-            data.forEach(sub => {
-                if (!byDate[sub.date_readable]) byDate[sub.date_readable] = [];
-                byDate[sub.date_readable].push(sub);
-            });
-            
-            const dates = Object.keys(byDate).sort();
-            let dayCount = 0;
-            
-            dates.forEach(dateKey => {
-                dayCount++;
-                const records = [];
-                const meals = ['Breakfast', 'Lunch', 'Dinner'];
-                
-                meals.forEach(mealType => {
-                    const mealData = byDate[dateKey].filter(d => d.meal_type === mealType);
-                    if (mealData.length > 0) {
-                        records.push({ // Meal header
-                            'Date': dateKey,
-                            'Meal Type': mealType,
-                            'Student Name': '',
-                            'Roll Number': '',
-                            'Items Reviewed': '',
-                            'Avg Taste': '',
-                            'Avg Quality': '',
-                            'Avg Quantity': '',
-                            'Avg Cleanliness': '',
-                            'Overall Rating': ''
-                        });
-                        
-                        mealData.forEach(sub => {
-                            const itemCount = sub.items.length;
-                            const totals = sub.items.reduce((acc, item) => ({
-                                taste: acc.taste + item.taste,
-                                quality: acc.quality + item.quality,
-                                quantity: acc.quantity + item.quantity,
-                                cleanliness: acc.cleanliness + item.cleanliness
-                            }), {taste: 0, quality: 0, quantity: 0, cleanliness: 0});
-                            
-                            records.push({
-                                'Date': dateKey,
-                                'Meal Type': mealType,
-                                'Student Name': sub.student_name,
-                                'Roll Number': sub.student_roll,
-                                'Items Reviewed': sub.items.map(i => i.item_name).join(', '),
-                                'Avg Taste': (totals.taste / itemCount).toFixed(2),
-                                'Avg Quality': (totals.quality / itemCount).toFixed(2),
-                                'Avg Quantity': (totals.quantity / itemCount).toFixed(2),
-                                'Avg Cleanliness': (totals.cleanliness / itemCount).toFixed(2),
-                                'Overall Rating': ((totals.taste + totals.quality + totals.quantity + totals.cleanliness) / (itemCount * 4)).toFixed(2)
-                            });
-                        });
-                    }
-                });
-                
-                const ws = XLSX.utils.json_to_sheet(records);
-                const dayName = new Date(dateKey).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                const sheetName = `Day ${dayCount} (${dayName})`;
-                XLSX.utils.book_append_sheet(workbook, ws, sheetName.substring(0, 31));
-            });
-            
-            XLSX.writeFile(workbook, `CMC_Weekly_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-            document.getElementById('export-menu').classList.remove('show');
+        // Calculate stats
+        const avgRatings = {
+            taste: 0,
+            quality: 0,
+            quantity: 0,
+            cleanliness: 0,
+            overall: 0
+        };
+
+        let count = 0;
+        const itemRatings = {};
+
+        filteredData.forEach(d => {
+            avgRatings.taste += d.taste;
+            avgRatings.quality += d.quality;
+            avgRatings.quantity += d.quantity;
+            avgRatings.cleanliness += d.cleanliness;
+
+            const avg = (d.taste + d.quality + d.quantity + d.cleanliness) / 4;
+            avgRatings.overall += avg;
+
+            if (!itemRatings[d.itemName]) {
+                itemRatings[d.itemName] = { count: 0, ratings: [] };
+            }
+            itemRatings[d.itemName].count++;
+            itemRatings[d.itemName].ratings.push(avg);
+
+            count++;
+        });
+
+        if (count > 0) {
+            avgRatings.taste /= count;
+            avgRatings.quality /= count;
+            avgRatings.quantity /= count;
+            avgRatings.cleanliness /= count;
+            avgRatings.overall /= count;
         }
 
-        function exportMonthlyReport() {
-            const now = new Date();
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            
-            const allData = JSON.parse(localStorage.getItem('cmc_feedback') || '[]');
-            const monthData = allData.filter(sub => {
-                const subDate = new Date(sub.datetime);
-                return subDate >= monthStart && subDate <= monthEnd;
-            });
-            
-            const workbook = XLSX.utils.book_new();
-            
-            // Group by date
-            const byDate = {};
-            monthData.forEach(sub => {
-                if (!byDate[sub.date_readable]) byDate[sub.date_readable] = [];
-                byDate[sub.date_readable].push(sub);
-            });
-            
-            const dates = Object.keys(byDate).sort();
-            let dayCount = 0;
-            
-            dates.forEach(dateKey => {
-                dayCount++;
-                const records = [];
-                const meals = ['Breakfast', 'Lunch', 'Dinner'];
-                
-                meals.forEach(mealType => {
-                    const mealData = byDate[dateKey].filter(d => d.meal_type === mealType);
-                    if (mealData.length > 0) {
-                        records.push({ // Meal header
-                            'Date': dateKey,
-                            'Meal Type': mealType,
-                            'Student Name': '',
-                            'Roll Number': '',
-                            'Items Reviewed': '',
-                            'Avg Taste': '',
-                            'Avg Quality': '',
-                            'Avg Quantity': '',
-                            'Avg Cleanliness': '',
-                            'Overall Rating': ''
-                        });
-                        
-                        mealData.forEach(sub => {
-                            const itemCount = sub.items.length;
-                            const totals = sub.items.reduce((acc, item) => ({
-                                taste: acc.taste + item.taste,
-                                quality: acc.quality + item.quality,
-                                quantity: acc.quantity + item.quantity,
-                                cleanliness: acc.cleanliness + item.cleanliness
-                            }), {taste: 0, quality: 0, quantity: 0, cleanliness: 0});
-                            
-                            records.push({
-                                'Date': dateKey,
-                                'Meal Type': mealType,
-                                'Student Name': sub.student_name,
-                                'Roll Number': sub.student_roll,
-                                'Items Reviewed': sub.items.map(i => i.item_name).join(', '),
-                                'Avg Taste': (totals.taste / itemCount).toFixed(2),
-                                'Avg Quality': (totals.quality / itemCount).toFixed(2),
-                                'Avg Quantity': (totals.quantity / itemCount).toFixed(2),
-                                'Avg Cleanliness': (totals.cleanliness / itemCount).toFixed(2),
-                                'Overall Rating': ((totals.taste + totals.quality + totals.quantity + totals.cleanliness) / (itemCount * 4)).toFixed(2)
-                            });
-                        });
+        // Update stats
+        const statsHTML = `
+            <div class="stat-card">
+                <h3>📊 Total Feedback</h3>
+                <div class="value">${count}</div>
+                <div class="subtext">submissions</div>
+            </div>
+            <div class="stat-card">
+                <h3>😋 Avg Taste</h3>
+                <div class="value">${avgRatings.taste.toFixed(1)}/5</div>
+                <div class="subtext">rating</div>
+            </div>
+            <div class="stat-card">
+                <h3>✨ Avg Quality</h3>
+                <div class="value">${avgRatings.quality.toFixed(1)}/5</div>
+                <div class="subtext">rating</div>
+            </div>
+            <div class="stat-card">
+                <h3>📦 Avg Quantity</h3>
+                <div class="value">${avgRatings.quantity.toFixed(1)}/5</div>
+                <div class="subtext">rating</div>
+            </div>
+            <div class="stat-card">
+                <h3>🧹 Avg Cleanliness</h3>
+                <div class="value">${avgRatings.cleanliness.toFixed(1)}/5</div>
+                <div class="subtext">rating</div>
+            </div>
+            <div class="stat-card">
+                <h3>⭐ Overall Rating</h3>
+                <div class="value" style="color: var(--accent);">${avgRatings.overall.toFixed(1)}/5</div>
+                <div class="subtext">average</div>
+            </div>
+        `;
+
+        document.getElementById('feedbackStats').innerHTML = statsHTML;
+
+        // Update table
+        const tableRows = filteredData.map(d => {
+            const avg = ((d.taste + d.quality + d.quantity + d.cleanliness) / 4).toFixed(1);
+            return `
+                <tr>
+                    <td>${d.dateReadable}</td>
+                    <td><span class="badge badge-success">${d.mealType}</span></td>
+                    <td>${d.itemName}</td>
+                    <td><span class="badge badge-success">${d.taste}/5</span></td>
+                    <td><span class="badge badge-success">${d.quality}/5</span></td>
+                    <td><span class="badge badge-success">${d.quantity}/5</span></td>
+                    <td><span class="badge badge-success">${d.cleanliness}/5</span></td>
+                    <td><strong>${avg}/5</strong></td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('feedbackBody').innerHTML = tableRows || '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">No feedback data for this period</td></tr>';
+
+        // Update charts
+        updateFeedbackCharts(filteredData, itemRatings);
+    }
+
+    function updateFeedbackCharts(data, itemRatings) {
+        // Criteria Chart
+        const criteriaCtx = document.getElementById('feedbackCriteriaChart').getContext('2d');
+        if (feedbackCriteriaChart) feedbackCriteriaChart.destroy();
+
+        const avgTaste = data.reduce((sum, d) => sum + d.taste, 0) / (data.length || 1);
+        const avgQuality = data.reduce((sum, d) => sum + d.quality, 0) / (data.length || 1);
+        const avgQuantity = data.reduce((sum, d) => sum + d.quantity, 0) / (data.length || 1);
+        const avgCleanliness = data.reduce((sum, d) => sum + d.cleanliness, 0) / (data.length || 1);
+
+        feedbackCriteriaChart = new Chart(criteriaCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Taste', 'Quality', 'Quantity', 'Cleanliness'],
+                datasets: [{
+                    label: 'Average Rating',
+                    data: [avgTaste, avgQuality, avgQuantity, avgCleanliness],
+                    borderColor: 'rgba(0, 212, 255, 1)',
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: { color: 'rgba(160, 170, 196, 1)' },
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' }
                     }
-                });
-                
-                const ws = XLSX.utils.json_to_sheet(records);
-                const dayName = new Date(dateKey).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const sheetName = `Day ${dayCount} (${dayName})`;
-                XLSX.utils.book_append_sheet(workbook, ws, sheetName.substring(0, 31));
+                },
+                plugins: {
+                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
+                }
+            }
+        });
+
+        // Top Items Chart
+        const topItems = Object.entries(itemRatings)
+            .map(([name, stats]) => ({
+                name,
+                avg: stats.ratings.reduce((a, b) => a + b, 0) / stats.ratings.length
+            }))
+            .sort((a, b) => b.avg - a.avg)
+            .slice(0, 8);
+
+        const itemsCtx = document.getElementById('topItemsChart').getContext('2d');
+        if (topItemsChart) topItemsChart.destroy();
+
+        topItemsChart = new Chart(itemsCtx, {
+            type: 'barh',
+            data: {
+                labels: topItems.map(i => i.name),
+                datasets: [{
+                    label: 'Average Rating',
+                    data: topItems.map(i => i.avg),
+                    backgroundColor: 'rgba(0, 200, 150, 0.8)',
+                    borderColor: 'rgba(0, 200, 150, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 5,
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
+                }
+            }
+        });
+
+        // Trend Chart
+        const dailyData = {};
+        data.forEach(d => {
+            if (!dailyData[d.date]) dailyData[d.date] = [];
+            dailyData[d.date].push((d.taste + d.quality + d.quantity + d.cleanliness) / 4);
+        });
+
+        const sortedDates = Object.keys(dailyData).sort();
+        const dailyAvgs = sortedDates.map(date => 
+            dailyData[date].reduce((a, b) => a + b, 0) / dailyData[date].length
+        );
+
+        const trendCtx = document.getElementById('feedbackTrendChart').getContext('2d');
+        if (feedbackTrendChart) feedbackTrendChart.destroy();
+
+        feedbackTrendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: sortedDates.map(d => new Date(d).toLocaleDateString('en-IN')),
+                datasets: [{
+                    label: 'Average Rating',
+                    data: dailyAvgs,
+                    borderColor: 'rgba(255, 165, 0, 1)',
+                    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
+                        ticks: { color: 'rgba(160, 170, 196, 1)' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
+                }
+            }
+        });
+    }
+
+    function exportFeedbackCSV() {
+        const period = document.getElementById('feedbackPeriod').value;
+        const date = new Date(document.getElementById('feedbackDate').value);
+
+        const allData = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+
+        let filteredData = [];
+
+        if (period === 'daily') {
+            filteredData = allData.filter(d => d.date === date.toISOString().split('T')[0]);
+        } else if (period === 'weekly') {
+            const weekStart = new Date(date);
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            filteredData = allData.filter(d => {
+                const dDate = new Date(d.date);
+                return dDate >= weekStart && dDate <= weekEnd;
             });
-            
-            XLSX.writeFile(workbook, `CMC_Monthly_Report_${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.xlsx`);
-            document.getElementById('export-menu').classList.remove('show');
+        } else if (period === 'monthly') {
+            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+            filteredData = allData.filter(d => {
+                const dDate = new Date(d.date);
+                return dDate >= monthStart && dDate <= monthEnd;
+            });
         }
 
-        updateDashboard();
-    </script>
+        let csv = 'Date,Meal Type,Item Name,Taste,Quality,Quantity,Cleanliness,Average Rating\n';
+
+        filteredData.forEach(d => {
+            const avg = ((d.taste + d.quality + d.quantity + d.cleanliness) / 4).toFixed(2);
+            csv += `${d.dateReadable},${d.mealType},"${d.itemName}",${d.taste},${d.quality},${d.quantity},${d.cleanliness},${avg}\n`;
+        });
+
+        downloadCSV(csv, `Feedback_Report_${period}_${new Date().toISOString().split('T')[0]}.csv`);
+    }
+
+    function exportFeedbackDaily() {
+        document.getElementById('feedbackPeriod').value = 'daily';
+        loadFeedbackData();
+        setTimeout(() => exportFeedbackCSV(), 500);
+    }
+
+    function exportFeedbackWeekly() {
+        document.getElementById('feedbackPeriod').value = 'weekly';
+        loadFeedbackData();
+        setTimeout(() => exportFeedbackCSV(), 500);
+    }
+
+    function exportFeedbackMonthly() {
+        document.getElementById('feedbackPeriod').value = 'monthly';
+        loadFeedbackData();
+        setTimeout(() => exportFeedbackCSV(), 500);
+    }
+
+    // ===== CSV DOWNLOAD FUNCTION =====
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
 </body>
 </html>
