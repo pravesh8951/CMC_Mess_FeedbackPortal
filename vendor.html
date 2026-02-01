@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - CMC Mess Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .user-info {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        
+        .user-info .name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: white;
+            color: #1abc9c;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .welcome-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .welcome-section h2 {
+            color: #1abc9c;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-top: 5px solid #1abc9c;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card.active {
+            border-top-color: #ffcc00;
+            background: #f0fdf9;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .content-header h2 {
+            color: #333;
+            font-size: 1.6rem;
+        }
+        
+        .close-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            color: #1abc9c;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #1abc9c;
+            box-shadow: 0 0 10px rgba(26, 188, 156, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th {
+            background: #1abc9c;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .date-range {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-box .label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1abc9c;
+        }
+        
+        .fine-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .fine-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .fine-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>🏪 Vendor Dashboard</h1>
+        <div class="header-info">
+            <div class="user-info">
+                <div class="name" id="user-name">Loading...</div>
+                <small id="mess-name">Authorized Vendor</small>
+            </div>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome Back, <span id="user-greeting">Vendor</span>!</h2>
+            <p>Manage your mess, view feedback, and handle fines and billing information.</p>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card" onclick="showContent('view-feedback')">
+                <div class="feature-icon">📝</div>
+                <h3>View Student Feedback</h3>
+                <p>See all feedback given by students about food quality and service.</p>
+                <button class="btn-action">View Feedback</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('give-justification')">
+                <div class="feature-icon">💬</div>
+                <h3>Give Justifications</h3>
+                <p>Provide explanations for quality deviations and complaints.</p>
+                <button class="btn-action">Submit Justification</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('view-fines')">
+                <div class="feature-icon">⚖️</div>
+                <h3>View Fines</h3>
+                <p>Review fines imposed by the warden and provide responses.</p>
+                <button class="btn-action">View Fines</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('view-billing')">
+                <div class="feature-icon">💰</div>
+                <h3>View Billing</h3>
+                <p>Check your billing summary and payment details.</p>
+                <button class="btn-action">View Billing</button>
+            </div>
+        </div>
+        
+        <!-- Content Sections -->
+        
+        <!-- View Feedback Section -->
+        <div id="view-feedback" class="content-section">
+            <div class="content-header">
+                <h2>📝 View Student Feedback</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div class="date-range">
+                <div class="form-group">
+                    <label for="report-mode-vendor">Report Type</label>
+                    <select id="report-mode-vendor" onchange="onVendorReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="vendor-control-date">
+                    <label for="feedback-start-date">Select Date</label>
+                    <input type="date" id="feedback-start-date">
+                </div>
+
+                <div class="form-group" id="vendor-control-week" style="display:none;">
+                    <label for="feedback-week-date">Week Date</label>
+                    <input type="date" id="feedback-week-date">
+                </div>
+
+                <div class="form-group" id="vendor-control-month" style="display:none;">
+                    <label for="feedback-month-vendor">Select Month</label>
+                    <input type="month" id="feedback-month-vendor">
+                </div>
+
+                <div class="form-group" id="vendor-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="date" id="vendor-report-start">
+                        <input type="date" id="vendor-report-end">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <button class="btn-action" onclick="generateVendorReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportVendorCSV()">Export CSV</button>
+                </div>
+            </div>
+            
+            <div class="stats-row" id="feedback-stats"></div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Date</th>
+                        <th>Meal</th>
+                        <th>Overall Rating</th>
+                        <th>Taste</th>
+                        <th>Quality</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-body">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999;">No feedback available</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Give Justification Section -->
+        <div id="give-justification" class="content-section">
+            <div class="content-header">
+                <h2>💬 Give Justifications for Complaints</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div id="success-msg" class="success-msg"></div>
+            
+            <div class="form-section">
+                <h3>Select Feedback to Respond</h3>
+                <div class="form-group">
+                    <label for="complaint-date">Select Date</label>
+                    <input type="date" id="complaint-date">
+                </div>
+                <button class="btn-action" onclick="loadComplaintsForResponse()" style="width: 100%; margin-bottom: 20px;">Load Complaints</button>
+            </div>
+            
+            <div id="complaints-list" style="margin-bottom: 30px;"></div>
+            
+            <div class="form-section">
+                <h3>Submit Justification</h3>
+                <div class="form-group">
+                    <label for="justification-text">Your Explanation/Justification</label>
+                    <textarea id="justification-text" rows="5" placeholder="Explain the issue and how you will address it..."></textarea>
+                </div>
+                <button class="btn-submit" onclick="submitJustification()">Submit Justification</button>
+            </div>
+        </div>
+        
+        <!-- View Fines Section -->
+        <div id="view-fines" class="content-section">
+            <div class="content-header">
+                <h2>⚖️ View Fines & Submit Responses</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div id="fines-list"></div>
+        </div>
+        
+        <!-- View Billing Section -->
+        <div id="view-billing" class="content-section">
+            <div class="content-header">
+                <h2>💰 Billing Summary</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div class="form-section">
+                <h3>Select Month & Year</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="billing-month">Month</label>
+                        <input type="month" id="billing-month">
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <button class="btn-action" onclick="loadBilling()">View Billing</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-row" id="billing-stats"></div>
+            
+            <div class="form-section">
+                <h3>Daily Breakdown</h3>
+                <table id="billing-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Students Fed</th>
+                            <th>Staff Fed</th>
+                            <th>Total People</th>
+                            <th>Amount (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billing-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999;">Select a month to view billing</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let userData = null;
+        let selectedFeedback = null;
+        
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user || user.role !== 'vendor') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            userData = user;
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-greeting').textContent = user.username;
+            document.getElementById('mess-name').textContent = {
+                'mess-001': 'Mess A (North Block)',
+                'mess-002': 'Mess B (South Block)',
+                'mess-003': 'Mess C (East Block)'
+            }[user.messId] || 'Your Mess';
+            
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('feedback-start-date').value = today;
+            document.getElementById('feedback-end-date')?.value && (document.getElementById('feedback-end-date').value = today);
+            document.getElementById('feedback-week-date').value = today;
+            document.getElementById('vendor-report-start').value = today;
+            document.getElementById('vendor-report-end').value = today;
+            document.getElementById('feedback-month-vendor').value = new Date().toISOString().slice(0,7);
+            document.getElementById('complaint-date').value = today;
+            document.getElementById('billing-month').valueAsDate = new Date();
+            
+            loadVendorFeedback();
+            loadVendorFines();
+        });
+        
+        function showContent(section) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function closeContent() {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        }
+        
+        function loadVendorFeedback() {
+            const feedbacks = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            const tbody = document.getElementById('feedback-body');
+            
+            // Filter feedback for this vendor (in a real app, feedback would be linked to vendor)
+            const vendorFeedback = feedbacks.slice(0, 20);
+            
+            if (vendorFeedback.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                document.getElementById('feedback-stats').innerHTML = '';
+                return;
+            }
+            
+            const avgRating = (vendorFeedback.reduce((sum, f) => sum + f.overallRating, 0) / vendorFeedback.length).toFixed(1);
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Feedbacks</div>
+                    <div class="value">${vendorFeedback.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Average Rating</div>
+                    <div class="value">${avgRating}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Low Ratings (<3)</div>
+                    <div class="value">${vendorFeedback.filter(f => f.overallRating < 3).length}</div>
+                </div>
+            `;
+            document.getElementById('feedback-stats').innerHTML = stats;
+            
+            tbody.innerHTML = vendorFeedback.map(f => `
+                <tr>
+                    <td>${f.studentName}</td>
+                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                    <td style="text-transform: capitalize;">${f.mealType}</td>
+                    <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
+                    <td>${f.ratings?.taste || '-'}/5</td>
+                    <td>${f.ratings?.quality || '-'}/5</td>
+                    <td>${f.comments || '-'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function filterVendorFeedback() {
+            loadVendorFeedback();
+        }
+
+        function onVendorReportModeChange() {
+            const mode = document.getElementById('report-mode-vendor').value;
+            document.getElementById('vendor-control-date').style.display = mode === 'daily' ? '' : 'none';
+            document.getElementById('vendor-control-week').style.display = mode === 'weekly' ? '' : 'none';
+            document.getElementById('vendor-control-month').style.display = mode === 'monthly' ? '' : 'none';
+            document.getElementById('vendor-control-custom').style.display = mode === 'custom' ? '' : 'none';
+        }
+
+        function generateVendorReport() {
+            const mode = document.getElementById('report-mode-vendor').value;
+            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            let filtered = [];
+
+            if (mode === 'daily') {
+                const d = document.getElementById('feedback-start-date').value;
+                if (!d) { alert('Select a date'); return; }
+                filtered = data.filter(f => f.date === d);
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('feedback-week-date').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day + 6) % 7;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                const start = monday.toISOString().slice(0,10);
+                const end = sunday.toISOString().slice(0,10);
+                filtered = data.filter(f => f.date >= start && f.date <= end);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('feedback-month-vendor').value; // YYYY-MM
+                if (!m) { alert('Select a month'); return; }
+                filtered = data.filter(f => f.date.startsWith(m + '-'));
+            } else if (mode === 'custom') {
+                const s = document.getElementById('vendor-report-start').value;
+                const e = document.getElementById('vendor-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                filtered = data.filter(f => f.date >= s && f.date <= e);
+            }
+
+            // Show stats and table for vendor (limit if necessary)
+            if (filtered.length === 0) {
+                document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                document.getElementById('feedback-stats').innerHTML = '';
+                return;
+            }
+
+            const avgRating = (filtered.reduce((sum, f) => sum + f.overallRating, 0) / filtered.length).toFixed(1);
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Feedbacks</div>
+                    <div class="value">${filtered.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Average Rating</div>
+                    <div class="value">${avgRating}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Low Ratings (&lt;3)</div>
+                    <div class="value">${filtered.filter(f => f.overallRating < 3).length}</div>
+                </div>
+            `;
+            document.getElementById('feedback-stats').innerHTML = stats;
+
+            document.getElementById('feedback-body').innerHTML = filtered.map(f => `
+                <tr>
+                    <td>${f.studentName}</td>
+                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                    <td style="text-transform: capitalize;">${f.mealType}</td>
+                    <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
+                    <td>${f.ratings?.taste || '-'}/5</td>
+                    <td>${f.ratings?.quality || '-'}/5</td>
+                    <td>${f.comments || '-'}</td>
+                </tr>
+            `).join('');
+
+            // Save filtered for export
+            window.__vendorFilteredFeedback = filtered;
+        }
+
+        function exportVendorCSV() {
+            const arr = (window.__vendorFilteredFeedback && window.__vendorFilteredFeedback.length) ? window.__vendorFilteredFeedback : JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            if (!arr || arr.length === 0) { alert('No data to export'); return; }
+            const headers = ['studentName','date','mealType','overallRating','taste','quality','comments'];
+            const csv = [headers.join(',')].concat(arr.map(r => headers.map(h => {
+                let v = r[h] === undefined ? '' : r[h];
+                if (typeof v === 'string') v = v.replace(/"/g, '""');
+                return '"' + String(v) + '"';
+            }).join(','))).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vendor_feedback_report_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadComplaintsForResponse() {
+            const feedbacks = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            const selectedDate = document.getElementById('complaint-date').value;
+            
+            const complaints = feedbacks.filter(f => f.date === selectedDate && f.overallRating < 3);
+            const list = document.getElementById('complaints-list');
+            
+            if (complaints.length === 0) {
+                list.innerHTML = '<p style="color: #999; text-align: center;">No complaints for this date</p>';
+                return;
+            }
+            
+            list.innerHTML = '<h3 style="margin-bottom: 15px;">Low Rating Feedbacks</h3>' + 
+                complaints.map((f, idx) => `
+                <div style="background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid #ffcc00;" onclick="selectComplaint(${idx})">
+                    <strong>${f.studentName}</strong> - Rating: <span class="badge warning">${f.overallRating}/5</span><br>
+                    <small style="color: #666;">${f.mealType} | ${f.comments}</small>
+                </div>
+            `).join('');
+        }
+        
+        function selectComplaint(index) {
+            alert('Justification selected for complaint ' + (index + 1));
+        }
+        
+        function submitJustification() {
+            const text = document.getElementById('justification-text').value;
+            if (!text) {
+                alert('Please enter your justification');
+                return;
+            }
+            
+            const justification = {
+                id: Date.now().toString(),
+                vendorId: userData.messId,
+                text: text,
+                timestamp: new Date().toISOString(),
+                status: 'Submitted'
+            };
+            
+            let justifications = JSON.parse(localStorage.getItem('vendorJustifications') || '[]');
+            justifications.unshift(justification);
+            localStorage.setItem('vendorJustifications', JSON.stringify(justifications));
+            
+            const msg = document.getElementById('success-msg');
+            msg.textContent = '✓ Justification submitted successfully!';
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+            
+            document.getElementById('justification-text').value = '';
+        }
+        
+        function loadVendorFines() {
+            const fines = JSON.parse(localStorage.getItem('fines') || '[]');
+            const list = document.getElementById('fines-list');
+            
+            if (fines.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">No fines imposed on your mess</p>';
+                return;
+            }
+            
+            list.innerHTML = fines.map(fine => `
+                <div class="fine-card">
+                    <h4>Fine Imposed on ${new Date(fine.date).toLocaleDateString('en-IN')}</h4>
+                    <p><strong>Reason:</strong> ${fine.reason.replace('-', ' ')}</p>
+                    <p><strong>Amount:</strong> ₹${fine.amount}</p>
+                    <p><strong>Meal Affected:</strong> ${fine.meal}</p>
+                    <p><strong>Remarks:</strong> ${fine.remarks}</p>
+                    <div style="margin-top: 12px;">
+                        <textarea placeholder="Submit your justification for this fine..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" rows="3"></textarea>
+                        <button class="btn-submit" style="margin-top: 10px;" onclick="submitFineJustification(this)">Submit Response</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function submitFineJustification(btn) {
+            const textarea = btn.parentElement.querySelector('textarea');
+            if (!textarea.value) {
+                alert('Please enter your response');
+                return;
+            }
+            
+            alert('Your response has been submitted successfully!');
+            textarea.value = '';
+            btn.textContent = '✓ Submitted';
+            btn.disabled = true;
+        }
+        
+        function loadBilling() {
+            const month = document.getElementById('billing-month').value;
+            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            
+            if (!month) {
+                alert('Please select a month');
+                return;
+            }
+            
+            const monthCounts = counts.filter(c => c.date.startsWith(month));
+            
+            if (monthCounts.length === 0) {
+                document.getElementById('billing-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No billing data available for this month</td></tr>';
+                document.getElementById('billing-stats').innerHTML = '';
+                return;
+            }
+            
+            let totalStudents = 0, totalFaculty = 0, totalAmount = 0;
+            
+            monthCounts.forEach(count => {
+                const s = count.students.breakfast + count.students.lunch + count.students.dinner;
+                const f = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
+                totalStudents += s;
+                totalFaculty += f;
+                totalAmount += (s * 50) + (f * 60); // Example rates
+            });
+            
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Students Fed</div>
+                    <div class="value">${totalStudents}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Staff Fed</div>
+                    <div class="value">${totalFaculty}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Amount (₹)</div>
+                    <div class="value">₹${totalAmount.toLocaleString('en-IN')}</div>
+                </div>
+            `;
+            document.getElementById('billing-stats').innerHTML = stats;
+            
+            const tbody = document.getElementById('billing-body');
+            tbody.innerHTML = monthCounts.map(count => {
+                const s = count.students.breakfast + count.students.lunch + count.students.dinner;
+                const f = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
+                const amount = (s * 50) + (f * 60);
+                return `
+                    <tr>
+                        <td>${new Date(count.date).toLocaleDateString('en-IN')}</td>
+                        <td>${s}</td>
+                        <td>${f}</td>
+                        <td>${s + f}</td>
+                        <td>₹${amount}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warden Dashboard - CMC Mess Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .user-info {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        
+        .user-info .name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .welcome-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .welcome-section h2 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-top: 5px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card.active {
+            border-top-color: #ffcc00;
+            background: #f8f9ff;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .content-header h2 {
+            color: #333;
+            font-size: 1.6rem;
+        }
+        
+        .close-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .feedback-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .feedback-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .feedback-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feedback-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .rating-badge {
+            background: #ffcc00;
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #dc3545;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .date-range {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-box .label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>👨‍💼 Warden Dashboard</h1>
+        <div class="header-info">
+            <div class="user-info">
+                <div class="name" id="user-name">Loading...</div>
+                <small>Authorized Warden</small>
+            </div>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome Back, <span id="user-greeting">Warden</span>!</h2>
+            <p>Manage daily food counts, monitor student feedback, and maintain food quality standards.</p>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card" onclick="showContent('add-count')">
+                <div class="feature-icon">📅</div>
+                <h3>Add Next-Day Food Count</h3>
+                <p>Enter daily food counts for breakfast, lunch, and dinner for students and faculty.</p>
+                <button class="btn-action">Get Started</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('view-feedback')">
+                <div class="feature-icon">📊</div>
+                <h3>View Student Feedback</h3>
+                <p>Review daily or date-wise feedback with ratings and complaints from students.</p>
+                <button class="btn-action">View Feedback</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('impose-fine')">
+                <div class="feature-icon">⚖️</div>
+                <h3>Impose Fines</h3>
+                <p>Apply fines to vendors for quality deviations and service issues.</p>
+                <button class="btn-action">Add Fine</button>
+            </div>
+        </div>
+        
+        <!-- Content Sections -->
+        
+        <!-- Add Food Count Section -->
+        <div id="add-count" class="content-section">
+            <div class="content-header">
+                <h2>📅 Add Next-Day Food Count</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div class="form-section">
+                <h3>Select Date for Food Count</h3>
+                <div class="form-group">
+                    <label for="count-date">Date</label>
+                    <input type="date" id="count-date" required>
+                </div>
+            </div>
+            
+            <div id="success-msg-count" class="success-msg"></div>
+            
+            <div class="form-section">
+                <h3>Students Count</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-breakfast">Breakfast</label>
+                        <input type="number" id="student-breakfast" min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-lunch">Lunch</label>
+                        <input type="number" id="student-lunch" min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-dinner">Dinner</label>
+                        <input type="number" id="student-dinner" min="0" placeholder="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Faculty/Teachers Count</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="faculty-breakfast">Breakfast</label>
+                        <input type="number" id="faculty-breakfast" min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="faculty-lunch">Lunch</label>
+                        <input type="number" id="faculty-lunch" min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="faculty-dinner">Dinner</label>
+                        <input type="number" id="faculty-dinner" min="0" placeholder="0">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-submit" onclick="saveFoodCount()">Save Food Count</button>
+            
+            <div class="form-section" style="margin-top: 30px;">
+                <h3>Recent Food Counts</h3>
+                <table class="feedback-table" id="count-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Students Count</th>
+                            <th>Faculty Count</th>
+                            <th>Total People</th>
+                        </tr>
+                    </thead>
+                    <tbody id="count-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #999;">No food counts added yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- View Feedback Section -->
+        <div id="view-feedback" class="content-section">
+            <div class="content-header">
+                <h2>📊 View Student Feedback</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div class="date-range">
+                <div class="form-group">
+                    <label for="report-mode">Report Type</label>
+                    <select id="report-mode" onchange="onReportModeChange()">
+                        <option value="daily">Daily (Select Date)</option>
+                        <option value="weekly">Weekly (Select Week Date)</option>
+                        <option value="monthly">Monthly (Select Month)</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="control-date">
+                    <label for="feedback-date">Select Date</label>
+                    <input type="date" id="feedback-date">
+                </div>
+
+                <div class="form-group" id="control-week" style="display:none;">
+                    <label for="feedback-week-date">Week Date</label>
+                    <input type="date" id="feedback-week-date">
+                </div>
+
+                <div class="form-group" id="control-month" style="display:none;">
+                    <label for="feedback-month">Select Month</label>
+                    <input type="month" id="feedback-month">
+                </div>
+
+                <div class="form-group" id="control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="date" id="report-start">
+                        <input type="date" id="report-end">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedback-meal">Meal Type</label>
+                    <select id="feedback-meal">
+                        <option value="">All Meals</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <button class="btn-action" onclick="generateFeedbackReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportFeedbackCSV()">Export CSV</button>
+                </div>
+            </div>
+            
+            <div class="stats-row" id="feedback-stats"></div>
+            
+            <table class="feedback-table" id="feedback-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Roll No</th>
+                        <th>Date</th>
+                        <th>Meal</th>
+                        <th>Overall Rating</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #999;">No feedback available</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Impose Fine Section -->
+        <div id="impose-fine" class="content-section">
+            <div class="content-header">
+                <h2>⚖️ Impose Fine on Vendor</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
+            <div id="success-msg-fine" class="success-msg"></div>
+            
+            <div class="form-section">
+                <h3>Fine Details</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fine-date">Date of Issue</label>
+                        <input type="date" id="fine-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fine-vendor">Select Mess/Vendor</label>
+                        <select id="fine-vendor" required>
+                            <option value="">-- Select Vendor --</option>
+                            <option value="mess-001">Mess A (North Block)</option>
+                            <option value="mess-002">Mess B (South Block)</option>
+                            <option value="mess-003">Mess C (East Block)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fine-reason">Reason for Fine</label>
+                    <select id="fine-reason" required>
+                        <option value="">-- Select Reason --</option>
+                        <option value="poor-quality">Poor Quality Food</option>
+                        <option value="hygiene-issue">Hygiene Issue</option>
+                        <option value="late-service">Late Service</option>
+                        <option value="wrong-item">Wrong Item Served</option>
+                        <option value="expired-food">Expired/Spoiled Food</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fine-amount">Fine Amount (₹)</label>
+                        <input type="number" id="fine-amount" min="0" step="100" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fine-meal">Meal Affected</label>
+                        <select id="fine-meal" required>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fine-remarks">Remarks/Details</label>
+                    <textarea id="fine-remarks" rows="4" placeholder="Describe the issue in detail..."></textarea>
+                </div>
+            </div>
+            
+            <button class="btn-submit" onclick="imposeFine()">Impose Fine</button>
+            
+            <div class="form-section" style="margin-top: 30px;">
+                <h3>Recent Fines Imposed</h3>
+                <table class="feedback-table" id="fines-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vendor/Mess</th>
+                            <th>Reason</th>
+                            <th>Amount (₹)</th>
+                            <th>Meal</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fines-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #999;">No fines imposed yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize warden dashboard
+        let userData = null;
+        
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user || user.role !== 'warden') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            userData = user;
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-greeting').textContent = user.username;
+            
+            // Set today's date for food count
+            document.getElementById('count-date').valueAsDate = new Date();
+            document.getElementById('feedback-date').valueAsDate = new Date();
+            document.getElementById('fine-date').valueAsDate = new Date();
+            
+            // Load initial data
+            loadFoodCounts();
+            loadFeedback();
+            loadFines();
+        });
+        
+        function showContent(section) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function closeContent() {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        }
+        
+        function saveFoodCount() {
+            const date = document.getElementById('count-date').value;
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
+            const foodCount = {
+                date: date,
+                students: {
+                    breakfast: parseInt(document.getElementById('student-breakfast').value) || 0,
+                    lunch: parseInt(document.getElementById('student-lunch').value) || 0,
+                    dinner: parseInt(document.getElementById('student-dinner').value) || 0
+                },
+                faculty: {
+                    breakfast: parseInt(document.getElementById('faculty-breakfast').value) || 0,
+                    lunch: parseInt(document.getElementById('faculty-lunch').value) || 0,
+                    dinner: parseInt(document.getElementById('faculty-dinner').value) || 0
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            let counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            counts = counts.filter(c => c.date !== date);
+            counts.unshift(foodCount);
+            localStorage.setItem('foodCounts', JSON.stringify(counts));
+            
+            const msg = document.getElementById('success-msg-count');
+            msg.textContent = '✓ Food count saved successfully!';
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+            
+            loadFoodCounts();
+        }
+        
+        function loadFoodCounts() {
+            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            const tbody = document.getElementById('count-body');
+            
+            if (counts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No food counts added yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = counts.slice(0, 10).map(count => {
+                const studentTotal = count.students.breakfast + count.students.lunch + count.students.dinner;
+                const facultyTotal = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
+                return `
+                    <tr>
+                        <td>${new Date(count.date).toLocaleDateString('en-IN')}</td>
+                        <td>${studentTotal}</td>
+                        <td>${facultyTotal}</td>
+                        <td>${studentTotal + facultyTotal}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function filterFeedback() {
+            loadFeedback();
+        }
+        
+        function loadFeedback() {
+            const feedbacks = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            const selectedMeal = document.getElementById('feedback-meal').value;
+            let filtered = feedbacks;
+            // If generateFeedbackReport created a filtered array, use it
+            if (window.__filteredFeedback) {
+                filtered = window.__filteredFeedback;
+            }
+            // If meal filter applied on top
+            if (selectedMeal) {
+                filtered = filtered.filter(f => f.mealType === selectedMeal);
+            }
+            
+            const tbody = document.getElementById('feedback-body');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                document.getElementById('feedback-stats').innerHTML = '';
+                return;
+            }
+            
+            // Calculate stats
+            const avgRating = (filtered.reduce((sum, f) => sum + f.overallRating, 0) / filtered.length).toFixed(1);
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Feedbacks</div>
+                    <div class="value">${filtered.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Average Rating</div>
+                    <div class="value">${avgRating}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg. Taste</div>
+                    <div class="value">${(filtered.reduce((sum, f) => sum + (f.ratings?.taste || 0), 0) / filtered.length).toFixed(1)}</div>
+                </div>
+            `;
+            document.getElementById('feedback-stats').innerHTML = stats;
+            
+            tbody.innerHTML = filtered.map(f => `
+                <tr>
+                    <td>${f.studentName}</td>
+                    <td>${f.rollNumber}</td>
+                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                    <td style="text-transform: capitalize;">${f.mealType}</td>
+                    <td><span class="rating-badge">${f.overallRating}/5</span></td>
+                    <td>${f.comments || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function onReportModeChange() {
+            const mode = document.getElementById('report-mode').value;
+            document.getElementById('control-date').style.display = mode === 'daily' ? '' : 'none';
+            document.getElementById('control-week').style.display = mode === 'weekly' ? '' : 'none';
+            document.getElementById('control-month').style.display = mode === 'monthly' ? '' : 'none';
+            document.getElementById('control-custom').style.display = mode === 'custom' ? '' : 'none';
+        }
+
+        function generateFeedbackReport() {
+            const mode = document.getElementById('report-mode').value;
+            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            let filtered = [];
+
+            if (mode === 'daily') {
+                const d = document.getElementById('feedback-date').value;
+                if (!d) { alert('Select a date'); return; }
+                filtered = data.filter(f => f.date === d);
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('feedback-week-date').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day + 6) % 7; // Monday as start
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                const start = monday.toISOString().slice(0,10);
+                const end = sunday.toISOString().slice(0,10);
+                filtered = data.filter(f => f.date >= start && f.date <= end);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('feedback-month').value; // YYYY-MM
+                if (!m) { alert('Select a month'); return; }
+                filtered = data.filter(f => f.date.startsWith(m + '-'));
+            } else if (mode === 'custom') {
+                const s = document.getElementById('report-start').value;
+                const e = document.getElementById('report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                filtered = data.filter(f => f.date >= s && f.date <= e);
+            }
+
+            window.__filteredFeedback = filtered;
+            // Apply meal filter and render
+            loadFeedback();
+        }
+
+        function exportFeedbackCSV() {
+            const arr = (window.__filteredFeedback && window.__filteredFeedback.length) ? window.__filteredFeedback : JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            if (!arr || arr.length === 0) { alert('No data to export'); return; }
+            const headers = ['studentName','rollNumber','date','mealType','overallRating','taste','quality','comments'];
+            const csv = [headers.join(',')].concat(arr.map(r => headers.map(h => {
+                let v = r[h] === undefined ? '' : r[h];
+                if (typeof v === 'string') v = v.replace(/"/g, '""');
+                return '"' + String(v) + '"';
+            }).join(','))).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `feedback_report_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+        
+        function imposeFine() {
+            const date = document.getElementById('fine-date').value;
+            const vendor = document.getElementById('fine-vendor').value;
+            const reason = document.getElementById('fine-reason').value;
+            const amount = document.getElementById('fine-amount').value;
+            const meal = document.getElementById('fine-meal').value;
+            const remarks = document.getElementById('fine-remarks').value;
+            
+            if (!date || !vendor || !reason || !amount) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            const fine = {
+                id: Date.now().toString(),
+                date: date,
+                vendor: vendor,
+                reason: reason,
+                amount: parseInt(amount),
+                meal: meal,
+                remarks: remarks,
+                imposedBy: userData.username,
+                timestamp: new Date().toISOString(),
+                status: 'Imposed'
+            };
+            
+            let fines = JSON.parse(localStorage.getItem('fines') || '[]');
+            fines.unshift(fine);
+            localStorage.setItem('fines', JSON.stringify(fines));
+            
+            const msg = document.getElementById('success-msg-fine');
+            msg.textContent = '✓ Fine imposed successfully!';
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+            
+            // Clear form
+            document.getElementById('fine-vendor').value = '';
+            document.getElementById('fine-reason').value = '';
+            document.getElementById('fine-amount').value = '';
+            document.getElementById('fine-remarks').value = '';
+            
+            loadFines();
+        }
+        
+        function loadFines() {
+            const fines = JSON.parse(localStorage.getItem('fines') || '[]');
+            const tbody = document.getElementById('fines-body');
+            
+            if (fines.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No fines imposed yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = fines.slice(0, 10).map(fine => {
+                const messName = {
+                    'mess-001': 'Mess A',
+                    'mess-002': 'Mess B',
+                    'mess-003': 'Mess C'
+                }[fine.vendor] || fine.vendor;
+                
+                return `
+                    <tr>
+                        <td>${new Date(fine.date).toLocaleDateString('en-IN')}</td>
+                        <td>${messName}</td>
+                        <td>${fine.reason.replace('-', ' ')}</td>
+                        <td>₹${fine.amount}</td>
+                        <td style="text-transform: capitalize;">${fine.meal}</td>
+                        <td><span class="rating-badge" style="background: #ff6b6b; color: white;">${fine.status}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
