@@ -37,6 +37,17 @@ def create_schema(conn):
         FOREIGN KEY(student_id) REFERENCES students(id)
     )
     """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS food_counts (
+        id INTEGER PRIMARY KEY,
+        count_date TEXT NOT NULL,
+        meal TEXT NOT NULL,
+        student_count INTEGER NOT NULL,
+        faculty_count INTEGER NOT NULL,
+        created_at TEXT
+    )
+    """)
     conn.commit()
 
 
@@ -83,6 +94,21 @@ def populate(conn, n_students=60, n_feedback=60):
     cur.executemany(
         "INSERT INTO feedback(student_id, feedback_date, meal, rating, comments) VALUES(?,?,?,?,?)",
         feedback_rows,
+    )
+    conn.commit()
+
+    # Generate food counts for January
+    food_counts = []
+    for day in range(1, 32):  # 1-31
+        date_str = f"2026-01-{day:02d}"
+        for meal in ['breakfast', 'lunch', 'dinner']:
+            student_count = random.randint(80, 200)
+            faculty_count = random.randint(10, 30)
+            food_counts.append((date_str, meal, student_count, faculty_count, None))
+
+    cur.executemany(
+        "INSERT INTO food_counts(count_date, meal, student_count, faculty_count, created_at) VALUES(?,?,?,?,?)",
+        food_counts,
     )
     conn.commit()
 

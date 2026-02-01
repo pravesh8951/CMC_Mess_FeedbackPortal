@@ -399,6 +399,13 @@
                 <p>Enter daily food counts for breakfast, lunch, and dinner for students and faculty.</p>
                 <button class="btn-action">Get Started</button>
             </div>
+
+            <div class="feature-card" onclick="showContent('view-count-report')">
+                <div class="feature-icon">📈</div>
+                <h3>View Food Count Reports</h3>
+                <p>View and analyze daily food counts by day, week, month or custom range. Export as CSV.</p>
+                <button class="btn-action">View Reports</button>
+            </div>
             
             <div class="feature-card" onclick="showContent('view-feedback')">
                 <div class="feature-icon">📊</div>
@@ -490,6 +497,73 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        
+        <!-- View Food Count Report Section -->
+        <div id="view-count-report" class="content-section">
+            <div class="content-header">
+                <h2>📈 Food Count Reports</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+
+            <div class="date-range">
+                <div class="form-group">
+                    <label for="count-report-mode">Report Type</label>
+                    <select id="count-report-mode" onchange="onCountReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="count-control-date">
+                    <label for="count-report-date">Select Date</label>
+                    <input type="date" id="count-report-date">
+                </div>
+
+                <div class="form-group" id="count-control-week" style="display:none;">
+                    <label for="count-report-week-date">Week Date</label>
+                    <input type="date" id="count-report-week-date">
+                </div>
+
+                <div class="form-group" id="count-control-month" style="display:none;">
+                    <label for="count-report-month">Select Month</label>
+                    <input type="month" id="count-report-month">
+                </div>
+
+                <div class="form-group" id="count-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="date" id="count-report-start">
+                        <input type="date" id="count-report-end">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <button class="btn-action" onclick="generateCountReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportCountCSV()">Export CSV</button>
+                </div>
+            </div>
+
+            <div class="stats-row" id="count-report-stats"></div>
+
+            <table class="feedback-table" id="count-report-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Meal Type</th>
+                        <th>Student Count</th>
+                        <th>Faculty Count</th>
+                        <th>Total People</th>
+                    </tr>
+                </thead>
+                <tbody id="count-report-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999;">Select date range to view food counts</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         
         <!-- View Feedback Section -->
@@ -967,6 +1041,141 @@
         function logout() {
             localStorage.removeItem('currentUser');
             window.location.href = 'login.html';
+        }
+
+        // ===== FOOD COUNT REPORT FUNCTIONS =====
+        function onCountReportModeChange() {
+            const mode = document.getElementById('count-report-mode').value;
+            document.getElementById('count-control-date').style.display = mode === 'daily' ? '' : 'none';
+            document.getElementById('count-control-week').style.display = mode === 'weekly' ? '' : 'none';
+            document.getElementById('count-control-month').style.display = mode === 'monthly' ? '' : 'none';
+            document.getElementById('count-control-custom').style.display = mode === 'custom' ? '' : 'none';
+        }
+
+        async function generateCountReport() {
+            const mode = document.getElementById('count-report-mode').value;
+            let start = null, end = null;
+            if (mode === 'daily') {
+                const d = document.getElementById('count-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('count-report-week-date').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day + 6) % 7;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('count-report-month').value; // YYYY-MM
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('count-report-start').value;
+                const e = document.getElementById('count-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
+            }
+
+            // Try server API first
+            try {
+                const url = `/api/food-counts?start=${start}&end=${end}`;
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    window.__filteredCountData = data;
+                    renderCountReport(data);
+                    return;
+                }
+            } catch (e) {
+                console.warn('API fetch failed, falling back to localStorage', e);
+            }
+
+            // Fallback to localStorage
+            window.__filteredCountData = [];
+            renderCountReport([]);
+        }
+
+        function renderCountReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('count-report-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No food count data available</td></tr>';
+                document.getElementById('count-report-stats').innerHTML = '';
+                return;
+            }
+
+            // Calculate stats
+            let totalStudents = 0, totalFaculty = 0, totalPeople = 0;
+            data.forEach(r => {
+                totalStudents += r.studentCount || 0;
+                totalFaculty += r.facultyCount || 0;
+                totalPeople += (r.studentCount || 0) + (r.facultyCount || 0);
+            });
+
+            const avgStudents = (totalStudents / data.length).toFixed(0);
+            const avgFaculty = (totalFaculty / data.length).toFixed(0);
+            const avgTotal = (totalPeople / data.length).toFixed(0);
+
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Records</div>
+                    <div class="value">${data.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Students Fed</div>
+                    <div class="value">${totalStudents}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Faculty Fed</div>
+                    <div class="value">${totalFaculty}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Daily People</div>
+                    <div class="value">${avgTotal}</div>
+                </div>
+            `;
+            document.getElementById('count-report-stats').innerHTML = stats;
+
+            document.getElementById('count-report-body').innerHTML = data.map(r => `
+                <tr>
+                    <td>${new Date(r.date).toLocaleDateString('en-IN')}</td>
+                    <td style="text-transform: capitalize;">${r.mealType}</td>
+                    <td>${r.studentCount}</td>
+                    <td>${r.facultyCount}</td>
+                    <td><strong>${(r.studentCount || 0) + (r.facultyCount || 0)}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function exportCountCSV() {
+            const arr = window.__filteredCountData;
+            if (!arr || arr.length === 0) { alert('No data to export'); return; }
+            const headers = ['date','mealType','studentCount','facultyCount','totalPeople'];
+            const csv = [headers.join(',')].concat(arr.map(r => headers.map(h => {
+                let v = r[h];
+                if (h === 'totalPeople') v = (r.studentCount || 0) + (r.facultyCount || 0);
+                if (v === undefined) v = '';
+                if (typeof v === 'string') v = v.replace(/"/g, '""');
+                return '"' + String(v) + '"';
+            }).join(','))).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `food_count_report_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
