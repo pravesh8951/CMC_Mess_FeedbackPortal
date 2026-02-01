@@ -124,6 +124,41 @@ def api_food_counts_csv():
     return output
 
 
+def get_avg_food_quality(start: str, end: str, meal: str | None = None):
+    """Get average food quality ratings from feedback for a date range."""
+    if not DB_PATH.exists():
+        return {}
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    sql = """
+    SELECT feedback_date, meal, AVG(rating) AS avg_rating, COUNT(*) AS feedback_count
+    FROM feedback
+    WHERE feedback_date >= ? AND feedback_date <= ?
+    """
+    params = [start, end]
+    if meal:
+        sql += " AND meal = ?"
+        params.append(meal)
+    sql += " GROUP BY feedback_date, meal"
+    cur.execute(sql, params)
+    rows = {(r['feedback_date'], r['meal']): {'avg_rating': round(r['avg_rating'], 2), 'count': r['feedback_count']} for r in cur.fetchall()}
+    conn.close()
+    return rows
+
+
+@APP.route('/api/food-quality')
+def api_food_quality():
+    """Get average food quality ratings."""
+    start = request.args.get('start')
+    end = request.args.get('end')
+    meal = request.args.get('meal') or None
+    if not start or not end:
+        return jsonify({'error': 'start and end query params required (YYYY-MM-DD)'}), 400
+    quality = get_avg_food_quality(start, end, meal)
+    return jsonify(quality)
+
+
 @APP.route('/', defaults={'path': 'index.html'})
 @APP.route('/<path:path>')
 def static_proxy(path):

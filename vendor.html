@@ -399,6 +399,13 @@
         
         <!-- Features Grid -->
         <div class="features-grid">
+            <div class="feature-card" onclick="showContent('view-food-counts')">
+                <div class="feature-icon">📊</div>
+                <h3>View Food Counts</h3>
+                <p>Check today's, next day's, and historical food counts with quality ratings.</p>
+                <button class="btn-action">View Counts</button>
+            </div>
+
             <div class="feature-card" onclick="showContent('view-feedback')">
                 <div class="feature-icon">📝</div>
                 <h3>View Student Feedback</h3>
@@ -429,6 +436,94 @@
         </div>
         
         <!-- Content Sections -->
+        
+        <!-- View Food Counts Section -->
+        <div id="view-food-counts" class="content-section">
+            <div class="content-header">
+                <h2>📊 Food Counts & Quality</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+
+            <!-- Today & Next Day Summary -->
+            <div class="form-section">
+                <h3>Today & Next Day Overview</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div id="today-summary" class="stat-box" style="background: #e8f5e9; border-left: 4px solid #28a745;">
+                        <div class="label">Today's Count</div>
+                        <div style="font-size: 0.9rem; margin-top: 10px; color: #555;">Loading...</div>
+                    </div>
+                    <div id="nextday-summary" class="stat-box" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
+                        <div class="label">Next Day's Count</div>
+                        <div style="font-size: 0.9rem; margin-top: 10px; color: #555;">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Filter -->
+            <div class="form-section">
+                <h3>View Historical Food Counts</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="vendor-count-mode">Report Type</label>
+                        <select id="vendor-count-mode" onchange="onVendorCountModeChange()">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="vendor-count-date-ctrl">
+                        <label for="vendor-count-date">Select Date</label>
+                        <input type="date" id="vendor-count-date">
+                    </div>
+
+                    <div class="form-group" id="vendor-count-week-ctrl" style="display:none;">
+                        <label for="vendor-count-week">Week Date</label>
+                        <input type="date" id="vendor-count-week">
+                    </div>
+
+                    <div class="form-group" id="vendor-count-month-ctrl" style="display:none;">
+                        <label for="vendor-count-month">Select Month</label>
+                        <input type="month" id="vendor-count-month">
+                    </div>
+
+                    <div class="form-group" id="vendor-count-custom-ctrl" style="display:none;">
+                        <label>Range: From-To</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="date" id="vendor-count-start" style="flex:1;">
+                            <input type="date" id="vendor-count-end" style="flex:1;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <button class="btn-action" onclick="generateVendorCountReport()">Search</button>
+                        <button class="btn-secondary" onclick="exportVendorCountCSV()">Export CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-row" id="vendor-count-stats"></div>
+
+            <table class="feedback-table" id="vendor-count-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Meal</th>
+                        <th>Student Count</th>
+                        <th>Faculty Count</th>
+                        <th>Total People</th>
+                        <th>Avg Quality Rating</th>
+                        <th>Fine Imposed</th>
+                    </tr>
+                </thead>
+                <tbody id="vendor-count-body">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999;">Select date range to view food counts</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         
         <!-- View Feedback Section -->
         <div id="view-feedback" class="content-section">
@@ -614,8 +709,16 @@
             document.getElementById('complaint-date').value = today;
             document.getElementById('billing-month').valueAsDate = new Date();
             
+            // Set food count defaults
+            document.getElementById('vendor-count-date').value = today;
+            document.getElementById('vendor-count-week').value = today;
+            document.getElementById('vendor-count-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('vendor-count-start').value = today;
+            document.getElementById('vendor-count-end').value = today;
+            
             loadVendorFeedback();
             loadVendorFines();
+            loadTodayAndNextDayCount();
         });
         
         function showContent(section) {
@@ -955,6 +1058,161 @@
         function logout() {
             localStorage.removeItem('currentUser');
             window.location.href = 'login.html';
+        }
+
+        // ===== VENDOR FOOD COUNT REPORT FUNCTIONS =====
+        function onVendorCountModeChange() {
+            const mode = document.getElementById('vendor-count-mode').value;
+            document.getElementById('vendor-count-date-ctrl').style.display = mode === 'daily' ? '' : 'none';
+            document.getElementById('vendor-count-week-ctrl').style.display = mode === 'weekly' ? '' : 'none';
+            document.getElementById('vendor-count-month-ctrl').style.display = mode === 'monthly' ? '' : 'none';
+            document.getElementById('vendor-count-custom-ctrl').style.display = mode === 'custom' ? '' : 'none';
+        }
+
+        async function generateVendorCountReport() {
+            const mode = document.getElementById('vendor-count-mode').value;
+            let start = null, end = null;
+            if (mode === 'daily') {
+                const d = document.getElementById('vendor-count-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('vendor-count-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day + 6) % 7;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('vendor-count-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('vendor-count-start').value;
+                const e = document.getElementById('vendor-count-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
+            }
+
+            try {
+                const counts = await fetch(`/api/food-counts?start=${start}&end=${end}`).then(r => r.ok ? r.json() : []);
+                const quality = await fetch(`/api/food-quality?start=${start}&end=${end}`).then(r => r.ok ? r.json() : {});
+                const fines = JSON.parse(localStorage.getItem('fines') || '[]');
+                
+                renderVendorCountReport(counts, quality, fines);
+                window.__vendorCountData = counts;
+            } catch (e) {
+                console.warn('API fetch failed', e);
+                window.__vendorCountData = [];
+                document.getElementById('vendor-count-body').innerHTML = '<tr><td colspan="7" style="text-align:center;">Error fetching data</td></tr>';
+            }
+        }
+
+        function renderVendorCountReport(counts, quality, fines) {
+            if (!counts || counts.length === 0) {
+                document.getElementById('vendor-count-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">No food count data</td></tr>';
+                document.getElementById('vendor-count-stats').innerHTML = '';
+                return;
+            }
+
+            let totalStudents = 0, totalFaculty = 0;
+            counts.forEach(c => {
+                totalStudents += c.studentCount || 0;
+                totalFaculty += c.facultyCount || 0;
+            });
+
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Records</div>
+                    <div class="value">${counts.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Students</div>
+                    <div class="value">${totalStudents}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total Faculty</div>
+                    <div class="value">${totalFaculty}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Total People</div>
+                    <div class="value">${totalStudents + totalFaculty}</div>
+                </div>
+            `;
+            document.getElementById('vendor-count-stats').innerHTML = stats;
+
+            document.getElementById('vendor-count-body').innerHTML = counts.map(c => {
+                const qKey = (c.date, c.mealType);
+                const q = quality[JSON.stringify(qKey)];
+                const qRating = q ? q.avg_rating : '-';
+                const fine = fines.find(f => f.date === c.date && f.meal === c.mealType);
+                const fineAmount = fine ? `₹${fine.amount}` : 'None';
+                const total = (c.studentCount || 0) + (c.facultyCount || 0);
+                return `
+                    <tr>
+                        <td>${new Date(c.date).toLocaleDateString('en-IN')}</td>
+                        <td style="text-transform:capitalize;">${c.mealType}</td>
+                        <td>${c.studentCount}</td>
+                        <td>${c.facultyCount}</td>
+                        <td><strong>${total}</strong></td>
+                        <td><span class="rating-badge">${qRating}/5</span></td>
+                        <td>${fineAmount}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportVendorCountCSV() {
+            const data = window.__vendorCountData || [];
+            if (!data.length) { alert('No data to export'); return; }
+            const csv = ['date,meal,studentCount,facultyCount,totalPeople'].concat(data.map(c => {
+                const total = (c.studentCount || 0) + (c.facultyCount || 0);
+                return `${c.date},${c.mealType},${c.studentCount},${c.facultyCount},${total}`;
+            })).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vendor_food_counts_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadTodayAndNextDayCount() {
+            const today = new Date().toISOString().slice(0,10);
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+
+            fetch(`/api/food-counts?start=${today}&end=${today}`)
+                .then(r => r.ok ? r.json() : [])
+                .then(counts => {
+                    const todayMeals = counts.map(c => `${c.mealType}: ${c.studentCount} students, ${c.facultyCount} faculty`).join('<br>');
+                    document.getElementById('today-summary').innerHTML = `<div class="label">Today's Count (${today})</div><div style="margin-top:10px;">${todayMeals || 'No data'}</div>`;
+                })
+                .catch(e => {
+                    document.getElementById('today-summary').innerHTML = '<div class="label">Today\'s Count</div><div style="margin-top:10px; color:#999;">Unable to load</div>';
+                });
+
+            fetch(`/api/food-counts?start=${tomorrow}&end=${tomorrow}`)
+                .then(r => r.ok ? r.json() : [])
+                .then(counts => {
+                    const tomorrowMeals = counts.map(c => `${c.mealType}: ${c.studentCount} students, ${c.facultyCount} faculty`).join('<br>');
+                    document.getElementById('nextday-summary').innerHTML = `<div class="label">Next Day's Count (${tomorrow})</div><div style="margin-top:10px;">${tomorrowMeals || 'No data'}</div>`;
+                })
+                .catch(e => {
+                    document.getElementById('nextday-summary').innerHTML = '<div class="label">Next Day\'s Count</div><div style="margin-top:10px; color:#999;">Unable to load</div>';
+                });
         }
     </script>
 </body>
