@@ -288,6 +288,47 @@
             background: #f9f9f9;
         }
         
+        .editable-cell {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .editable-cell:hover {
+            background: #fff3cd;
+            font-weight: 600;
+        }
+        
+        .btn-edit, .btn-delete {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #5568d3;
+            transform: scale(1.1);
+        }
+        
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #ee5a5a;
+            transform: scale(1.1);
+        }
+        
         .rating-badge {
             background: #ffcc00;
             color: #333;
@@ -485,9 +526,10 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Students Count</th>
-                            <th>Faculty Count</th>
+                            <th>Students Count (Click to edit)</th>
+                            <th>Faculty Count (Click to edit)</th>
                             <th>Total People</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="count-body">
@@ -745,10 +787,13 @@
             document.getElementById('user-name').textContent = user.name;
             document.getElementById('user-greeting').textContent = user.username;
             
-            // Set today's date for food count
-            document.getElementById('count-date').valueAsDate = new Date();
-            document.getElementById('feedback-date').valueAsDate = new Date();
-            document.getElementById('fine-date').valueAsDate = new Date();
+            // Set today's date for food count with restrictions
+            const today = new Date();
+            const todayString = today.toISOString().split('T')[0];
+            document.getElementById('count-date').valueAsDate = today;
+            document.getElementById('count-date').min = todayString; // Prevent selecting past dates
+            document.getElementById('feedback-date').valueAsDate = today;
+            document.getElementById('fine-date').valueAsDate = today;
             
             // Load initial data
             loadFoodCounts();
@@ -806,22 +851,144 @@
             const tbody = document.getElementById('count-body');
             
             if (counts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No food counts added yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No food counts added yet</td></tr>';
                 return;
             }
             
-            tbody.innerHTML = counts.slice(0, 10).map(count => {
+            tbody.innerHTML = counts.slice(0, 10).map((count, index) => {
                 const studentTotal = count.students.breakfast + count.students.lunch + count.students.dinner;
                 const facultyTotal = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
                 return `
-                    <tr>
+                    <tr id="count-row-${index}">
                         <td>${new Date(count.date).toLocaleDateString('en-IN')}</td>
-                        <td>${studentTotal}</td>
-                        <td>${facultyTotal}</td>
+                        <td class="editable-cell" onclick="makeEditable(${index}, 'student')" title="Click to edit"><span id="student-display-${index}">${studentTotal}</span></td>
+                        <td class="editable-cell" onclick="makeEditable(${index}, 'faculty')" title="Click to edit"><span id="faculty-display-${index}">${facultyTotal}</span></td>
                         <td>${studentTotal + facultyTotal}</td>
+                        <td style="display: flex; gap: 5px;">
+                            <button class="btn-edit" onclick="editCount(${index})" title="Edit">✏️</button>
+                            <button class="btn-delete" onclick="deleteCount(${index})" title="Delete">🗑️</button>
+                        </td>
                     </tr>
                 `;
             }).join('');
+        }
+        
+        function makeEditable(index, type) {
+            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            const count = counts[index];
+            
+            if (type === 'student') {
+                const newValue = prompt('Enter total student count (or individual counts separated by commas for B,L,D):', 
+                    `${count.students.breakfast},${count.students.lunch},${count.students.dinner}`);
+                if (newValue) {
+                    const parts = newValue.split(',').map(v => parseInt(v.trim()) || 0);
+                    if (parts.length === 3) {
+                        count.students.breakfast = parts[0];
+                        count.students.lunch = parts[1];
+                        count.students.dinner = parts[2];
+                    } else {
+                        alert('Please enter 3 numbers separated by commas (Breakfast, Lunch, Dinner)');
+                        return;
+                    }
+                }
+            } else if (type === 'faculty') {
+                const newValue = prompt('Enter total faculty count (or individual counts separated by commas for B,L,D):', 
+                    `${count.faculty.breakfast},${count.faculty.lunch},${count.faculty.dinner}`);
+                if (newValue) {
+                    const parts = newValue.split(',').map(v => parseInt(v.trim()) || 0);
+                    if (parts.length === 3) {
+                        count.faculty.breakfast = parts[0];
+                        count.faculty.lunch = parts[1];
+                        count.faculty.dinner = parts[2];
+                    } else {
+                        alert('Please enter 3 numbers separated by commas (Breakfast, Lunch, Dinner)');
+                        return;
+                    }
+                }
+            }
+            
+            counts[index] = count;
+            localStorage.setItem('foodCounts', JSON.stringify(counts));
+            loadFoodCounts();
+        }
+        
+        function editCount(index) {
+            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            const count = counts[index];
+            
+            const editHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" id="edit-modal-${index}">
+                    <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+                        <h3>Edit Food Count - ${new Date(count.date).toLocaleDateString('en-IN')}</h3>
+                        <div style="margin-top: 20px;">
+                            <h4>Students</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                                <div>
+                                    <label>Breakfast</label>
+                                    <input type="number" id="edit-sb-${index}" value="${count.students.breakfast}" min="0">
+                                </div>
+                                <div>
+                                    <label>Lunch</label>
+                                    <input type="number" id="edit-sl-${index}" value="${count.students.lunch}" min="0">
+                                </div>
+                                <div>
+                                    <label>Dinner</label>
+                                    <input type="number" id="edit-sd-${index}" value="${count.students.dinner}" min="0">
+                                </div>
+                            </div>
+                            <h4>Faculty</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                                <div>
+                                    <label>Breakfast</label>
+                                    <input type="number" id="edit-fb-${index}" value="${count.faculty.breakfast}" min="0">
+                                </div>
+                                <div>
+                                    <label>Lunch</label>
+                                    <input type="number" id="edit-fl-${index}" value="${count.faculty.lunch}" min="0">
+                                </div>
+                                <div>
+                                    <label>Dinner</label>
+                                    <input type="number" id="edit-fd-${index}" value="${count.faculty.dinner}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button onclick="closeEditModal(${index})" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+                            <button onclick="saveEditedCount(${index})" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', editHTML);
+        }
+        
+        function closeEditModal(index) {
+            const modal = document.getElementById(`edit-modal-${index}`);
+            if (modal) modal.remove();
+        }
+        
+        function saveEditedCount(index) {
+            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+            counts[index].students.breakfast = parseInt(document.getElementById(`edit-sb-${index}`).value) || 0;
+            counts[index].students.lunch = parseInt(document.getElementById(`edit-sl-${index}`).value) || 0;
+            counts[index].students.dinner = parseInt(document.getElementById(`edit-sd-${index}`).value) || 0;
+            counts[index].faculty.breakfast = parseInt(document.getElementById(`edit-fb-${index}`).value) || 0;
+            counts[index].faculty.lunch = parseInt(document.getElementById(`edit-fl-${index}`).value) || 0;
+            counts[index].faculty.dinner = parseInt(document.getElementById(`edit-fd-${index}`).value) || 0;
+            
+            localStorage.setItem('foodCounts', JSON.stringify(counts));
+            closeEditModal(index);
+            loadFoodCounts();
+        }
+        
+        function deleteCount(index) {
+            if (confirm('Are you sure you want to delete this food count record?')) {
+                let counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
+                counts.splice(index, 1);
+                localStorage.setItem('foodCounts', JSON.stringify(counts));
+                loadFoodCounts();
+            }
         }
         
         function filterFeedback() {
