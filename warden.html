@@ -812,42 +812,61 @@
             document.getElementById('control-custom').style.display = mode === 'custom' ? '' : 'none';
         }
 
-        function generateFeedbackReport() {
+        async function generateFeedbackReport() {
             const mode = document.getElementById('report-mode').value;
-            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            let filtered = [];
-
+            let start = null, end = null;
             if (mode === 'daily') {
                 const d = document.getElementById('feedback-date').value;
                 if (!d) { alert('Select a date'); return; }
-                filtered = data.filter(f => f.date === d);
+                start = end = d;
             } else if (mode === 'weekly') {
                 const d = document.getElementById('feedback-week-date').value;
                 if (!d) { alert('Select a week date'); return; }
                 const dt = new Date(d);
                 const day = dt.getDay();
-                const diffToMonday = (day + 6) % 7; // Monday as start
+                const diffToMonday = (day + 6) % 7;
                 const monday = new Date(dt);
                 monday.setDate(dt.getDate() - diffToMonday);
                 const sunday = new Date(monday);
                 sunday.setDate(monday.getDate() + 6);
-                const start = monday.toISOString().slice(0,10);
-                const end = sunday.toISOString().slice(0,10);
-                filtered = data.filter(f => f.date >= start && f.date <= end);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
             } else if (mode === 'monthly') {
                 const m = document.getElementById('feedback-month').value; // YYYY-MM
                 if (!m) { alert('Select a month'); return; }
-                filtered = data.filter(f => f.date.startsWith(m + '-'));
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
             } else if (mode === 'custom') {
                 const s = document.getElementById('report-start').value;
                 const e = document.getElementById('report-end').value;
                 if (!s || !e) { alert('Select start and end date'); return; }
                 if (s > e) { alert('Start date must be <= end date'); return; }
-                filtered = data.filter(f => f.date >= s && f.date <= e);
+                start = s; end = e;
             }
 
+            const meal = document.getElementById('feedback-meal').value || '';
+
+            // Try server API first
+            try {
+                const url = `/api/feedback?start=${start}&end=${end}` + (meal ? `&meal=${meal}` : '');
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    window.__filteredFeedback = data;
+                    loadFeedback();
+                    return;
+                }
+            } catch (e) {
+                console.warn('API fetch failed, falling back to local data', e);
+            }
+
+            // Fallback: compute from localStorage
+            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            let filtered = data.filter(f => f.date >= start && f.date <= end);
+            if (meal) filtered = filtered.filter(f => f.mealType === meal);
             window.__filteredFeedback = filtered;
-            // Apply meal filter and render
             loadFeedback();
         }
 

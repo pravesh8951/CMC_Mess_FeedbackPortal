@@ -683,15 +683,13 @@
             document.getElementById('vendor-control-custom').style.display = mode === 'custom' ? '' : 'none';
         }
 
-        function generateVendorReport() {
+        async function generateVendorReport() {
             const mode = document.getElementById('report-mode-vendor').value;
-            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            let filtered = [];
-
+            let start = null, end = null;
             if (mode === 'daily') {
                 const d = document.getElementById('feedback-start-date').value;
                 if (!d) { alert('Select a date'); return; }
-                filtered = data.filter(f => f.date === d);
+                start = end = d;
             } else if (mode === 'weekly') {
                 const d = document.getElementById('feedback-week-date').value;
                 if (!d) { alert('Select a week date'); return; }
@@ -702,46 +700,74 @@
                 monday.setDate(dt.getDate() - diffToMonday);
                 const sunday = new Date(monday);
                 sunday.setDate(monday.getDate() + 6);
-                const start = monday.toISOString().slice(0,10);
-                const end = sunday.toISOString().slice(0,10);
-                filtered = data.filter(f => f.date >= start && f.date <= end);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
             } else if (mode === 'monthly') {
                 const m = document.getElementById('feedback-month-vendor').value; // YYYY-MM
                 if (!m) { alert('Select a month'); return; }
-                filtered = data.filter(f => f.date.startsWith(m + '-'));
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
             } else if (mode === 'custom') {
                 const s = document.getElementById('vendor-report-start').value;
                 const e = document.getElementById('vendor-report-end').value;
                 if (!s || !e) { alert('Select start and end date'); return; }
                 if (s > e) { alert('Start date must be <= end date'); return; }
-                filtered = data.filter(f => f.date >= s && f.date <= e);
+                start = s; end = e;
             }
 
-            // Show stats and table for vendor (limit if necessary)
-            if (filtered.length === 0) {
-                document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
-                document.getElementById('feedback-stats').innerHTML = '';
-                return;
+            try {
+                const url = `/api/feedback?start=${start}&end=${end}`;
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const filtered = await resp.json();
+                    if (!filtered || filtered.length === 0) {
+                        document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                        document.getElementById('feedback-stats').innerHTML = '';
+                        return;
+                    }
+
+                    const avgRating = (filtered.reduce((sum, f) => sum + f.overallRating, 0) / filtered.length).toFixed(1);
+                    const stats = `
+                        <div class="stat-box">
+                            <div class="label">Total Feedbacks</div>
+                            <div class="value">${filtered.length}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Average Rating</div>
+                            <div class="value">${avgRating}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Low Ratings (&lt;3)</div>
+                            <div class="value">${filtered.filter(f => f.overallRating < 3).length}</div>
+                        </div>
+                    `;
+                    document.getElementById('feedback-stats').innerHTML = stats;
+
+                    document.getElementById('feedback-body').innerHTML = filtered.map(f => `
+                        <tr>
+                            <td>${f.studentName}</td>
+                            <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                            <td style="text-transform: capitalize;">${f.mealType}</td>
+                            <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
+                            <td>${f.taste || '-'}/5</td>
+                            <td>${f.quality || '-'}/5</td>
+                            <td>${f.comments || '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    window.__vendorFilteredFeedback = filtered;
+                    return;
+                }
+            } catch (e) {
+                console.warn('API fetch failed, falling back to local data', e);
             }
 
-            const avgRating = (filtered.reduce((sum, f) => sum + f.overallRating, 0) / filtered.length).toFixed(1);
-            const stats = `
-                <div class="stat-box">
-                    <div class="label">Total Feedbacks</div>
-                    <div class="value">${filtered.length}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Average Rating</div>
-                    <div class="value">${avgRating}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Low Ratings (&lt;3)</div>
-                    <div class="value">${filtered.filter(f => f.overallRating < 3).length}</div>
-                </div>
-            `;
-            document.getElementById('feedback-stats').innerHTML = stats;
-
-            document.getElementById('feedback-body').innerHTML = filtered.map(f => `
+            // Fallback to localStorage
+            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            let filtered = data.filter(f => f.date >= start && f.date <= end);
+            document.getElementById('feedback-body').innerHTML = filtered.length ? filtered.map(f => `
                 <tr>
                     <td>${f.studentName}</td>
                     <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
@@ -751,9 +777,8 @@
                     <td>${f.ratings?.quality || '-'}/5</td>
                     <td>${f.comments || '-'}</td>
                 </tr>
-            `).join('');
-
-            // Save filtered for export
+            `).join('') : '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+            document.getElementById('feedback-stats').innerHTML = '';
             window.__vendorFilteredFeedback = filtered;
         }
 
