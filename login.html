@@ -66,9 +66,9 @@
         }
         
         .role-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
             width: 100%;
             margin-bottom: 30px;
         }
@@ -314,7 +314,7 @@
                 <p>Choose your role to access the system</p>
             </div>
             
-            <div class="role-grid">
+            <div class="role-grid" style="display: flex; justify-content: center; gap: 20px;">
                 <!-- Warden Card -->
                 <div class="role-card" onclick="selectRole('warden')">
                     <div class="role-icon">👨‍💼</div>

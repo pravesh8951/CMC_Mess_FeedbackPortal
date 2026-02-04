@@ -3,169 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMC Mess Admin Dashboard</title>
+    <title>Admin Dashboard - CMC Mess Management</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #08385a;
-            --primary-light: #1b6ca8;
-            --accent: #ffc83d;
-            --success: #28a745;
-            --warning: #ff9a56;
-            --danger: #e74c3c;
-            --bg1: #f6fafb;
-            --bg2: #eef6f8;
-            --card-bg: #f8fbfc;
-            --text-primary: #22303f;
-            --text-secondary: #6b7280;
-            --border: #e1eef6;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh; /* Ensure body takes full height */
         }
-
-        /* ===== HEADER (light) ===== */
+        
         header {
-            background: linear-gradient(90deg, #ffffff 0%, #f7fbfc 100%);
-            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(34, 48, 63, 0.06);
-            position: sticky;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky; /* Keep header visible */
             top: 0;
             z-index: 100;
         }
-
-        header h1 { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
-
-        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
-
-        .user-info { text-align: right; padding-right: 0.5rem; color: var(--text-secondary); }
-
-        .btn { padding: 0.6rem 1rem; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
-
-        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ff4757); color: white; }
-
-        /* ===== NAVIGATION TABS ===== */
-        .nav-tabs {
+        
+        header h1 {
+            font-size: 1.8rem;
             display: flex;
-            gap: 0;
-            background: var(--card-bg);
-            border-bottom: 2px solid var(--border);
-            padding: 0 2rem;
-            margin: 0;
-            list-style: none;
+            align-items: center;
+            gap: 10px;
         }
-
-        .nav-tabs li {
-            margin: 0;
+        
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
         }
-
-        .nav-tabs a {
-            display: block;
-            padding: 1rem 1.5rem;
-            color: var(--text-secondary);
-            text-decoration: none;
+        
+        .user-info {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        
+        .user-info .name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-
-        .nav-tabs a:hover {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
+        
+        .btn-logout:hover {
+            background: white;
+            color: #1abc9c;
         }
-
-        .nav-tabs a.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-
-        /* ===== CONTAINER ===== */
+        
         .container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 30px 20px;
         }
-
-        /* ===== SECTIONS ===== */
-        .tab-content {
+        
+        .welcome-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .welcome-section h2 {
+            color: #1abc9c;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-top: 5px solid #1abc9c;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card.active {
+            border-top-color: #ffcc00;
+            background: #f0fdf9;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             display: none;
         }
-
-        .tab-content.active {
+        
+        .content-section.active {
             display: block;
-            animation: fadeIn 0.4s ease;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
         }
-
-        /* ===== STAT CARDS ===== */
-        .stats-grid {
+        
+        .content-header h2 {
+            color: #333;
+            font-size: 1.6rem;
+        }
+        
+        .close-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            color: #1abc9c;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #1abc9c;
+            box-shadow: 0 0 10px rgba(26, 188, 156, 0.2);
+        }
+        
+        .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
         }
-
-        .stat-card {
-            background: linear-gradient(135deg, #eef6f8 0%, #d4dbe2 100%);
-            border: 1px solid rgba(34,48,63,0.06);
-            border-radius: 12px;
-            padding: 1.75rem;
-            transition: all 0.3s ease;
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 1rem;
         }
-
-        .stat-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0, 212, 255, 0.15);
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
         }
-
-        .stat-card h3 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .feedback-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .feedback-table th {
+            background: #1abc9c;
+            color: white;
+            padding: 12px;
+            text-align: left;
             font-weight: 600;
         }
-
-        .stat-card .value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
+        
+        .feedback-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
         }
-
-        .stat-card .subtext {
+        
+        .feedback-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .rating-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            display: inline-block; /* Ensure badge respects padding */
+        }
+        
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .date-range-inputs {
+            display: flex;
+            gap: 8px;
         }
 
-        /* ===== FILTER SECTION ===== */
         .filter-section {
-            background: linear-gradient(135deg, #f6fbfc 0%, #c9d4dd 100%);
-            border: 1px solid rgba(34,48,63,0.04);
+            background: #f8fcfc;
+            border: 1px solid #e1eef6;
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
@@ -174,1208 +327,1466 @@
             gap: 1rem;
             align-items: end;
         }
-
-        .form-group {
+        .filter-actions {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
         }
 
-        .form-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
 
-        .form-group input,
-        .form-group select {
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #f0f0f0;
+            padding: 15px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            text-align: center;
         }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-            background: rgba(0, 212, 255, 0.05);
-            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
-        }
-
-        /* ===== TABLE ===== */
-        .table-container {
-            background: linear-gradient(135deg, #f7fbfc 0%, #dfe6ec 100%);
-            border: 1px solid rgba(34,48,63,0.04);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: rgba(0, 212, 255, 0.1);
-            border-bottom: 2px solid var(--border);
-        }
-
-        th {
-            padding: 1rem 1.25rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--accent);
+        
+        .stat-box .label {
+            color: #666;
             font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1abc9c;
         }
 
-        td {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-primary);
+        .summary-box {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1abc9c;
+            margin-bottom: 20px;
         }
 
-        tbody tr:hover {
-            background: rgba(0, 212, 255, 0.05);
+        .summary-box h4 {
+            color: #1abc9c;
+            margin-bottom: 10px;
         }
 
-        tbody tr:last-child td {
-            border-bottom: none;
+        .summary-box p {
+            color: #555;
+            margin: 5px 0;
+            font-size: 0.95rem;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
+        .fine-response-box { /* Keeping style for now, but not directly used for display */
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
+        }
+
+        .fine-response-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .fine-response-box .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .fine-detail {
+            background: white;
+            padding: 10px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            border-left: 2px solid #ff9800;
+        }
+
+        .fine-detail label {
+            font-size: 0.85rem;
+            color: #666;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .fine-detail .value {
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #333;
+            font-size: 1rem;
         }
 
-        .badge-success {
-            background: rgba(0, 200, 150, 0.2);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background: rgba(255, 165, 0, 0.2);
-            color: var(--warning);
-        }
-
-        .badge-pending {
-            background: rgba(160, 170, 196, 0.2);
-            color: var(--text-secondary);
-        }
-
-        /* ===== CHARTS ===== */
-        .charts-grid {
+        .chart-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
-        .chart-container {
-            background: linear-gradient(135deg, #f7fbfc 0%, #d8dee5 100%);
-            border: 1px solid rgba(34,48,63,0.04);
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
             border-radius: 12px;
-            padding: 1.75rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
 
-        .chart-container h3 {
-            color: var(--accent);
-            margin-bottom: 1.5rem;
+        .chart-wrapper h4 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
             font-size: 1.1rem;
         }
 
-        .chart-wrapper {
-            position: relative;
-            height: 350px;
+        .chart-wrapper canvas {
+            max-height: 350px;
         }
 
-        /* ===== EXPORT MENU ===== */
-        .export-menu {
-            position: relative;
-            display: inline-block;
-        }
-
-        .export-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
+        .billing-summary {
+            background: #e3f2fd;
+            padding: 20px;
             border-radius: 8px;
-            min-width: 200px;
-            margin-top: 0.5rem;
-            display: none;
-            flex-direction: column;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 20px;
         }
 
-        .export-dropdown.show {
-            display: flex;
+        .billing-summary h4 {
+            color: #2196f3;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
         }
 
-        .export-dropdown a {
-            padding: 0.75rem 1.5rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            border-bottom: 1px solid var(--border);
-            transition: all 0.2s ease;
-            cursor: pointer;
+        .billing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
         }
 
-        .export-dropdown a:last-child {
-            border-bottom: none;
-        }
-
-        .export-dropdown a:hover {
-            background: rgba(0, 212, 255, 0.15);
-            color: var(--accent);
-            padding-left: 2rem;
-        }
-
-        /* ===== MODAL ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(10, 24, 35, 0.25);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-        }
-
-        .modal-content h2 {
-            color: var(--accent);
-            margin-bottom: 1rem;
-        }
-
-        .modal-content p {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        .btn-secondary {
-            background: var(--border);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary-light);
-        }
-
-        /* ===== LOGIN SECTION ===== */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 60vh;
-            background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
-        }
-
-        .login-box {
-            background: var(--card-bg);
-            border: 1px solid rgba(34,48,63,0.06);
-            border-radius: 12px;
-            padding: 2.25rem;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 12px 40px rgba(11, 50, 80, 0.06);
-        }
-
-        .login-box h2 {
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            font-size: 1.8rem;
+        .billing-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
             text-align: center;
+            border-bottom: 2px solid #2196f3;
         }
 
-        .login-box p {
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
+        .billing-item-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
         }
 
-        .login-box .form-group {
-            margin-bottom: 1.5rem;
+        .billing-item-value {
+            color: #2196f3;
+            font-weight: bold;
+            font-size: 1.4rem;
         }
-
-        .login-box .btn-primary {
-            width: 100%;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-
-        /* ===== RESPONSIVE ===== */
+        
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 15px;
             }
-
-            .filter-section {
+            
+            header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .features-grid {
                 grid-template-columns: 1fr;
             }
-
-            .charts-grid {
+            
+            .form-row, .filter-section, .filter-actions {
                 grid-template-columns: 1fr;
             }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .filter-actions button {
+                width: 100%;
             }
 
-            .nav-tabs {
-                overflow-x: auto;
+            .chart-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-
-<!-- LOGIN MODAL -->
-<div id="loginModal" class="modal active">
-    <div class="login-box">
-        <h2>Admin Login</h2>
-        <p>CMC Mess Management System</p>
-        <form onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="admin" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-    </div>
-</div>
-
-<!-- MAIN DASHBOARD -->
-<div id="mainDashboard" style="display: none;">
-    <!-- HEADER -->
+    <!-- Header -->
     <header>
-        <h1>📊 CMC Mess Admin Dashboard</h1>
-        <div class="header-actions">
+        <h1>⭐ Admin Dashboard</h1>
+        <div class="header-info">
             <div class="user-info">
-                <p>Welcome, <strong id="adminName">Admin</strong></p>
-                <p style="font-size: 0.8rem; margin: 0;">System Administrator</p>
+                <div class="name" id="user-name">Loading...</div>
+                <small id="mess-name">Mess Management</small>
             </div>
-            <button class="btn btn-danger" onclick="logout()">Logout</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
     </header>
-
-    <!-- NAVIGATION TABS -->
-    <ul class="nav-tabs">
-        <li><a class="nav-link active" onclick="switchTab('billing')">💰 Billing Reports</a></li>
-        <li><a class="nav-link" onclick="switchTab('feedback')">⭐ Feedback Analysis</a></li>
-        <li><a class="nav-link" onclick="switchTab('exports')">📥 Data Exports</a></li>
-    </ul>
-
+    
+    <!-- Main Container -->
     <div class="container">
-        <!-- ===== BILLING REPORTS TAB ===== -->
-        <div id="billing" class="tab-content active">
-            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Billing Report</h2>
-
-            <div class="filter-section">
-                <div class="form-group">
-                    <label>Start Date</label>
-                    <input type="date" id="billStartDate" onchange="loadBillingReport()">
-                </div>
-                <div class="form-group">
-                    <label>End Date</label>
-                    <input type="date" id="billEndDate" onchange="loadBillingReport()">
-                </div>
-                <div class="form-group">
-                    <label>Tax Rate (%)</label>
-                    <input type="number" id="taxRate" value="0" min="0" max="100" step="0.1" onchange="loadBillingReport()">
-                </div>
-                <button class="btn btn-primary" onclick="exportBillingCSV()">📥 Export CSV</button>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome Back, <span id="user-greeting">Admin</span>!</h2>
+            <p>Manage food counts, view student feedback, review fines, and track billing information.</p>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card" onclick="showContent('view-food-counts')">
+                <div class="feature-icon">📊</div>
+                <h3>Food Count Overview</h3>
+                <p>View historical food counts updated by wardens.</p>
+                <button class="btn-action">View Counts</button>
             </div>
 
-            <!-- BILLING STATS -->
-            <div id="billingStats" class="stats-grid"></div>
+            <div class="feature-card" onclick="showContent('view-feedback')">
+                <div class="feature-icon">📝</div>
+                <h3>Student Feedback</h3>
+                <p>See meal-wise feedback ratings from students with analysis and reports.</p>
+                <button class="btn-action">View Feedback</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('view-fines')">
+                <div class="feature-icon">⚖️</div>
+                <h3>Fines & Vendor Responses</h3>
+                <p>Review imposed fines and vendor counter-feedback.</p>
+                <button class="btn-action">Manage Fines</button>
+            </div>
+            
+            <div class="feature-card" onclick="showContent('view-billing')">
+                <div class="feature-icon">💰</div>
+                <h3>Billing & Payment</h3>
+                <p>Check daily/weekly/monthly billing with PDF summary and CSV export.</p>
+                <button class="btn-action">View Billing</button>
+            </div>
+        </div>
+        
+        <!-- Content Sections -->
+        
+        <!-- View Food Counts Section -->
+        <div id="view-food-counts" class="content-section">
+            <div class="content-header">
+                <h2>📊 Food Count Overview</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
 
-            <!-- BILLING TABLE -->
-            <div class="table-container">
-                <table>
+            <!-- Historical Food Counts -->
+            <div class="form-section">
+                <h3>View Historical Food Counts</h3>
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="count-report-mode">Report Type</label>
+                        <select id="count-report-mode" onchange="onCountReportModeChange()">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="count-control-date">
+                        <label for="count-report-date">Select Date</label>
+                        <input type="date" id="count-report-date">
+                    </div>
+
+                    <div class="form-group" id="count-control-week" style="display:none;">
+                        <label for="count-report-week">Week Date</label>
+                        <input type="date" id="count-report-week">
+                    </div>
+
+                    <div class="form-group" id="count-control-month" style="display:none;">
+                        <label for="count-report-month">Select Month</label>
+                        <input type="month" id="count-report-month">
+                    </div>
+
+                    <div class="form-group" id="count-control-custom" style="display:none;">
+                        <label>Custom Range</label>
+                        <div class="date-range-inputs">
+                            <input type="date" id="count-report-start">
+                            <input type="date" id="count-report-end">
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn-action" onclick="generateCountReport()">Search</button>
+                        <button class="btn-secondary" onclick="exportCountCSV()">Export CSV</button>
+                    </div>
+                </div>
+
+                <div class="stats-row" id="count-report-stats"></div>
+
+                <table class="feedback-table" id="count-report-table">
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Breakfast</th>
                             <th>Lunch</th>
                             <th>Dinner</th>
-                            <th>Total People</th>
-                            <th>Base Amount (₹)</th>
-                            <th>Tax (₹)</th>
-                            <th>Total Bill (₹)</th>
+                            <th>Maximum People Fed</th>
                         </tr>
                     </thead>
-                    <tbody id="billingBody">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Select date range to view billing</td></tr>
+                    <tbody id="count-report-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999;">Select date range to view food counts</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-
-            <!-- CHARTS -->
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3>Daily People Fed Trend</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="billingTrendChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3>Meal Type Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="mealDistributionChart"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <!-- ===== FEEDBACK ANALYSIS TAB ===== -->
-        <div id="feedback" class="tab-content">
-            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Student Feedback Analysis</h2>
-
+        
+        <!-- View Feedback Section -->
+        <div id="view-feedback" class="content-section">
+            <div class="content-header">
+                <h2>📝 Student Feedback Analysis</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+            
             <div class="filter-section">
                 <div class="form-group">
-                    <label>Period</label>
-                    <select id="feedbackPeriod" onchange="loadFeedbackData()">
+                    <label for="feedback-report-mode">Report Type</label>
+                    <select id="feedback-report-mode" onchange="onFeedbackReportModeChange()">
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="feedbackDate" onchange="loadFeedbackData()">
+
+                <div class="form-group" id="feedback-control-date">
+                    <label for="feedback-report-date">Select Date</label>
+                    <input type="date" id="feedback-report-date">
                 </div>
-                <button class="btn btn-primary" onclick="exportFeedbackCSV()">📥 Export CSV</button>
+
+                <div class="form-group" id="feedback-control-week" style="display:none;">
+                    <label for="feedback-report-week">Week Date</label>
+                    <input type="date" id="feedback-report-week">
+                </div>
+
+                <div class="form-group" id="feedback-control-month" style="display:none;">
+                    <label for="feedback-report-month">Select Month</label>
+                    <input type="month" id="feedback-report-month">
+                </div>
+
+                <div class="form-group" id="feedback-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="feedback-report-start">
+                        <input type="date" id="feedback-report-end">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateFeedbackReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportFeedbackCSV()">Export CSV</button>
+                </div>
             </div>
+            
+            <div class="stats-row" id="feedback-report-stats"></div>
+            
+            <table class="feedback-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Student Name</th>
+                        <th>Roll No</th>
+                        <th>Breakfast Rating</th>
+                        <th>Lunch Rating</th>
+                        <th>Dinner Rating</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-body">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999;">Select date range to view feedback</td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <!-- FEEDBACK STATS -->
-            <div id="feedbackStats" class="stats-grid"></div>
-
-            <!-- FEEDBACK TABLE -->
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Meal Type</th>
-                            <th>Item Name</th>
-                            <th>Taste</th>
-                            <th>Quality</th>
-                            <th>Quantity</th>
-                            <th>Cleanliness</th>
-                            <th>Avg Rating</th>
-                        </tr>
-                    </thead>
-                    <tbody id="feedbackBody">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Select period and date to view feedback</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- CHARTS -->
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3>Rating Criteria Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="feedbackCriteriaChart"></canvas>
-                    </div>
+            <div class="chart-row" id="feedback-charts-container" style="display:none;">
+                <div class="chart-wrapper">
+                    <h4>Meal-wise Average Ratings</h4>
+                    <canvas id="mealRatingChart"></canvas>
                 </div>
-                <div class="chart-container">
-                    <h3>Top Rated Items</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="topItemsChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3>Feedback Over Time</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="feedbackTrendChart"></canvas>
-                    </div>
+                <div class="chart-wrapper">
+                    <h4>Rating Distribution</h4>
+                    <canvas id="ratingDistributionChart"></canvas>
                 </div>
             </div>
         </div>
+        
+        <!-- View Fines Section -->
+        <div id="view-fines" class="content-section">
+            <div class="content-header">
+                <h2>⚖️ Fines Management & Vendor Responses</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
 
-        <!-- ===== DATA EXPORTS TAB ===== -->
-        <div id="exports" class="tab-content">
-            <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Data Exports</h2>
+            <div id="success-msg-fine" class="success-msg"></div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                <!-- BILLING EXPORTS -->
-                <div class="chart-container">
-                    <h3>📊 Billing Data</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Export billing reports in CSV format</p>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <button class="btn btn-primary" onclick="exportBillingDaily()" style="justify-content: center;">Daily Billing Report</button>
-                        <button class="btn btn-primary" onclick="exportBillingWeekly()" style="justify-content: center;">Weekly Billing Report</button>
-                        <button class="btn btn-primary" onclick="exportBillingMonthly()" style="justify-content: center;">Monthly Billing Report</button>
+            <div class="filter-section">
+                <div class="form-group">
+                    <label for="vendor-fine-report-mode">Report Type</label>
+                    <select id="vendor-fine-report-mode" onchange="onVendorFineReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-date">
+                    <label for="vendor-fine-report-date">Select Date</label>
+                    <input type="date" id="vendor-fine-report-date">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-week" style="display:none;">
+                    <label for="vendor-fine-report-week">Week Date</label>
+                    <input type="date" id="vendor-fine-report-week">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-month" style="display:none;">
+                    <label for="vendor-fine-report-month">Select Month</label>
+                    <input type="month" id="vendor-fine-report-month">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="vendor-fine-report-start">
+                        <input type="date" id="vendor-fine-report-end">
                     </div>
                 </div>
 
-                <!-- FEEDBACK EXPORTS -->
-                <div class="chart-container">
-                    <h3>⭐ Feedback Data</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Export feedback reports in CSV format</p>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <button class="btn btn-primary" onclick="exportFeedbackDaily()" style="justify-content: center;">Daily Feedback Report</button>
-                        <button class="btn btn-primary" onclick="exportFeedbackWeekly()" style="justify-content: center;">Weekly Feedback Report</button>
-                        <button class="btn btn-primary" onclick="exportFeedbackMonthly()" style="justify-content: center;">Monthly Feedback Report</button>
+                <div class="form-group">
+                    <label for="vendor-fine-response-status">Response Status</label>
+                    <select id="vendor-fine-response-status">
+                        <option value="all">All Fines</option>
+                        <option value="submitted">Response Submitted</option>
+                        <option value="not_submitted">No Response Yet</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateVendorFineReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportVendorFinesCSV()">Export CSV</button>
+                </div>
+            </div>
+            
+            <div id="fines-table-container">
+                <table class="feedback-table" id="admin-fines-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Meal</th>
+                            <th>Reason</th>
+                            <th>Imposed By</th>
+                            <th>Amount (₹)</th>
+                            <th>Vendor Response</th>
+                            <th>Response Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-fines-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #999; padding: 30px;">Select filters and search for fines</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- View Billing Section -->
+        <div id="view-billing" class="content-section">
+            <div class="content-header">
+                <h2>💰 Billing & Payment</h2>
+                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="form-group">
+                    <label for="billing-report-mode">Report Type</label>
+                    <select id="billing-report-mode" onchange="onBillingReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="billing-control-date">
+                    <label for="billing-report-date">Select Date</label>
+                    <input type="date" id="billing-report-date">
+                </div>
+
+                <div class="form-group" id="billing-control-week" style="display:none;">
+                    <label for="billing-report-week">Week Date</label>
+                    <input type="date" id="billing-report-week">
+                </div>
+
+                <div class="form-group" id="billing-control-month" style="display:none;">
+                    <label for="billing-report-month">Select Month</label>
+                    <input type="month" id="billing-report-month">
+                </div>
+
+                <div class="form-group" id="billing-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="billing-report-start">
+                        <input type="date" id="billing-report-end">
                     </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateBillingReport()">Generate</button>
+                    <button class="btn-secondary" onclick="exportBillingCSV()">Export CSV</button>
+                    <button class="btn-secondary" onclick="generateBillingPDF()">Download PDF</button>
+                </div>
+            </div>
+
+            <div id="billing-summary-container"></div>
+
+            <table class="feedback-table" id="billing-table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Breakfast Count</th>
+                        <th>Lunch Count</th>
+                        <th>Dinner Count</th>
+                        <th>Max People Fed</th>
+                        <th>Amount (₹)</th>
+                        <th>Fine (₹)</th>
+                        <th>Net Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="billing-body">
+                </tbody>
+            </table>
+
+            <div class="chart-row" id="billing-charts-container" style="display:none;">
+                <div class="chart-wrapper">
+                    <h4>Daily Billing Trend</h4>
+                    <canvas id="billingTrendChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h4>Revenue vs Fines</h4>
+                    <canvas id="revenueFinesChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-    // ===== AUTHENTICATION =====
-    const ADMIN_CREDENTIALS = {
-        username: 'admin',
-        password: 'admin123'
-    };
-
-    function handleLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-            localStorage.setItem('adminLogged', 'true');
-            localStorage.setItem('adminName', username);
-            document.getElementById('loginModal').classList.remove('active');
-            document.getElementById('mainDashboard').style.display = 'block';
-            document.getElementById('adminName').textContent = username.charAt(0).toUpperCase() + username.slice(1);
-            initializeDashboard();
-        } else {
-            alert('Invalid credentials! Use admin/admin123');
-        }
-    }
-
-    function logout() {
-        // Clear session and redirect to central role-selection login immediately
-        try { localStorage.removeItem('adminLogged'); } catch (e) {}
-        try { localStorage.removeItem('adminName'); } catch (e) {}
-        try { localStorage.removeItem('currentUser'); } catch (e) {}
-        location.replace('login.html?force=true');
-    }
-
-    // If user logged in via central login page, respect that session
-    try {
-        const sessionUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-        if (sessionUser && sessionUser.role === 'admin') {
-            localStorage.setItem('adminLogged', 'true');
-            localStorage.setItem('adminName', sessionUser.name || sessionUser.username || 'Admin');
-        }
-    } catch (e) { /* ignore parse errors */ }
-
-    // Check if user is logged in (either via admin modal or central login)
-    if (localStorage.getItem('adminLogged') === 'true') {
-        document.getElementById('loginModal').classList.remove('active');
-        document.getElementById('mainDashboard').style.display = 'block';
-        document.getElementById('adminName').textContent = localStorage.getItem('adminName') || 'Admin';
-    }
-
-    // ===== TAB SWITCHING =====
-    function switchTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-
-        // Remove active class from all links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
-
-        // Show selected tab
-        document.getElementById(tabName).classList.add('active');
-
-        // Add active class to clicked link
-        event.target.classList.add('active');
-
-        if (tabName === 'billing') {
-            setTimeout(() => {
-                if (billingChart) billingChart.resize();
-                if (mealChart) mealChart.resize();
-            }, 100);
-        }
-    }
-
-    let billingChart, mealChart, feedbackCriteriaChart, topItemsChart, feedbackTrendChart;
-
-    // ===== DATA GENERATION (Mock Data) =====
-    function generateMockBillingData() {
-        const data = [];
-        const today = new Date();
+    
+    <script>
+        let userData = null;
+        let mealRatingChartInstance = null;
+        let ratingDistributionChartInstance = null;
+        let billingTrendChartInstance = null;
+        let revenueFinesChartInstance = null;
         
-        for (let i = 90; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
+        // Global variable to store filtered data for PDF/CSV exports
+        let currentVendorFinesData = [];
+        let currentBillingData = [];
+
+
+        window.addEventListener('load', async () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user || user.role !== 'admin') { // Changed role check to 'admin'
+                window.location.href = 'login.html';
+                return;
+            }
             
-            data.push({
-                date: date.toISOString().split('T')[0],
-                dateReadable: date.toLocaleDateString('en-IN'),
-                breakfast: Math.floor(Math.random() * 200) + 150,
-                lunch: Math.floor(Math.random() * 250) + 200,
-                dinner: Math.floor(Math.random() * 200) + 150
-            });
+            userData = user;
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-greeting').textContent = user.username;
+            document.getElementById('mess-name').textContent = 'Mess Management'; // Hardcoded for admin
+            
+            const today = new Date().toISOString().split('T')[0];
+
+            // Initialize Food Count report date filters
+            document.getElementById('count-report-date').value = today;
+            document.getElementById('count-report-week').value = today;
+            document.getElementById('count-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('count-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('count-report-end').value = today;
+            onCountReportModeChange(); // Ensure correct initial display
+
+            // Initialize Feedback report date filters
+            document.getElementById('feedback-report-date').value = today;
+            document.getElementById('feedback-report-week').value = today;
+            document.getElementById('feedback-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('feedback-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('feedback-report-end').value = today;
+            onFeedbackReportModeChange(); // Ensure correct initial display
+
+            // Initialize Vendor Fine report date filters
+            document.getElementById('vendor-fine-report-date').value = today;
+            document.getElementById('vendor-fine-report-week').value = today;
+            document.getElementById('vendor-fine-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('vendor-fine-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('vendor-fine-report-end').value = today;
+            document.getElementById('vendor-fine-response-status').value = 'all'; // Default to all fines
+            onVendorFineReportModeChange(); // Ensure correct initial display
+
+            // Initialize Billing report date filters
+            document.getElementById('billing-report-date').value = today;
+            document.getElementById('billing-report-week').value = today;
+            document.getElementById('billing-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('billing-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('billing-report-end').value = today;
+            onBillingReportModeChange(); // Ensure correct initial display
+
+            // Removed loadTodayAndTomorrowCount() for admin.
+            await generateVendorFineReport(getPastDate(30), today, 'all'); // Initial load for fines with default filters
+        });
+
+        function getPastDate(days) {
+            const d = new Date();
+            d.setDate(d.getDate() - days);
+            return d.toISOString().split('T')[0];
         }
         
-        localStorage.setItem('billingData', JSON.stringify(data));
-        return data;
-    }
-
-    function generateMockFeedbackData() {
-        const items = ['Biryani', 'Dal', 'Rice', 'Vegetables', 'Dosa', 'Idli', 'Sambar', 'Rasam', 'Bread', 'Butter', 'Milk'];
-        const meals = ['Breakfast', 'Lunch', 'Dinner'];
-        const data = [];
-        const today = new Date();
-
-        for (let i = 60; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-
-            for (const meal of meals) {
-                for (let j = 0; j < Math.floor(Math.random() * 5) + 2; j++) {
-                    data.push({
-                        date: date.toISOString().split('T')[0],
-                        dateReadable: date.toLocaleDateString('en-IN'),
-                        mealType: meal,
-                        itemName: items[Math.floor(Math.random() * items.length)],
-                        taste: Math.floor(Math.random() * 5) + 1,
-                        quality: Math.floor(Math.random() * 5) + 1,
-                        quantity: Math.floor(Math.random() * 5) + 1,
-                        cleanliness: Math.floor(Math.random() * 5) + 1
-                    });
-                }
-            }
+        function showContent(section) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        localStorage.setItem('feedbackData', JSON.stringify(data));
-        return data;
-    }
-
-    function initializeDashboard() {
-        // Generate mock data if not exists
-        if (!localStorage.getItem('billingData')) {
-            generateMockBillingData();
-        }
-        if (!localStorage.getItem('feedbackData')) {
-            generateMockFeedbackData();
-        }
-
-        // Set default dates
-        const today = new Date();
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        document.getElementById('billStartDate').valueAsDate = thirtyDaysAgo;
-        document.getElementById('billEndDate').valueAsDate = today;
-        document.getElementById('feedbackDate').valueAsDate = today;
-
-        loadBillingReport();
-    }
-
-    // ===== BILLING FUNCTIONS =====
-    function loadBillingReport() {
-        const startDate = new Date(document.getElementById('billStartDate').value);
-        const endDate = new Date(document.getElementById('billEndDate').value);
-        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-
-        const allData = JSON.parse(localStorage.getItem('billingData') || '[]');
-
-        // Filter data by date range
-        const filteredData = allData.filter(d => {
-            const date = new Date(d.date);
-            return date >= startDate && date <= endDate;
-        });
-
-        // Calculate totals
-        let totalBreakfast = 0, totalLunch = 0, totalDinner = 0;
-        let totalAmount = 0, totalTax = 0, totalBill = 0;
-
-        const tableRows = filteredData.map(d => {
-            const maxPeople = Math.max(d.breakfast, d.lunch, d.dinner);
-            const baseAmount = maxPeople * 150;
-            const tax = (baseAmount * taxRate) / 100;
-            const bill = baseAmount + tax;
-
-            totalBreakfast += d.breakfast;
-            totalLunch += d.lunch;
-            totalDinner += d.dinner;
-            totalAmount += baseAmount;
-            totalTax += tax;
-            totalBill += bill;
-
-            return `
-                <tr>
-                    <td><strong>${d.dateReadable}</strong></td>
-                    <td>${d.breakfast}</td>
-                    <td>${d.lunch}</td>
-                    <td>${d.dinner}</td>
-                    <td>${maxPeople}</td>
-                    <td>₹${baseAmount.toLocaleString('en-IN')}</td>
-                    <td>₹${tax.toFixed(2)}</td>
-                    <td><strong>₹${bill.toFixed(2)}</strong></td>
-                </tr>
-            `;
-        });
-
-        document.getElementById('billingBody').innerHTML = tableRows.join('');
-
-        // Update stats
-        const statsHTML = `
-            <div class="stat-card">
-                <h3>👥 Total Breakfast</h3>
-                <div class="value">${totalBreakfast}</div>
-                <div class="subtext">people fed</div>
-            </div>
-            <div class="stat-card">
-                <h3>🍽️ Total Lunch</h3>
-                <div class="value">${totalLunch}</div>
-                <div class="subtext">people fed</div>
-            </div>
-            <div class="stat-card">
-                <h3>🌙 Total Dinner</h3>
-                <div class="value">${totalDinner}</div>
-                <div class="subtext">people fed</div>
-            </div>
-            <div class="stat-card">
-                <h3>💵 Base Amount</h3>
-                <div class="value">₹${totalAmount.toLocaleString('en-IN')}</div>
-                <div class="subtext">subtotal</div>
-            </div>
-            <div class="stat-card">
-                <h3>🧮 Tax Amount</h3>
-                <div class="value">₹${totalTax.toFixed(2)}</div>
-                <div class="subtext">${taxRate}% tax</div>
-            </div>
-            <div class="stat-card">
-                <h3>💰 Total Bill</h3>
-                <div class="value" style="color: var(--success);">₹${totalBill.toFixed(2)}</div>
-                <div class="subtext">final amount</div>
-            </div>
-        `;
-
-        document.getElementById('billingStats').innerHTML = statsHTML;
-
-        // Update charts
-        updateBillingCharts(filteredData, taxRate);
-    }
-
-    function updateBillingCharts(data, taxRate) {
-        // Trend Chart
-        const trendCtx = document.getElementById('billingTrendChart').getContext('2d');
-        if (billingChart) billingChart.destroy();
-
-        billingChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: data.map(d => d.dateReadable),
-                datasets: [{
-                    label: 'People Fed',
-                    data: data.map(d => Math.max(d.breakfast, d.lunch, d.dinner)),
-                    borderColor: 'rgba(0, 212, 255, 1)',
-                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: 'rgba(0, 212, 255, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    }
-                }
-            }
-        });
-
-        // Meal Distribution Chart
-        const totalBreakfast = data.reduce((sum, d) => sum + d.breakfast, 0);
-        const totalLunch = data.reduce((sum, d) => sum + d.lunch, 0);
-        const totalDinner = data.reduce((sum, d) => sum + d.dinner, 0);
-
-        const mealCtx = document.getElementById('mealDistributionChart').getContext('2d');
-        if (mealChart) mealChart.destroy();
-
-        mealChart = new Chart(mealCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Breakfast', 'Lunch', 'Dinner'],
-                datasets: [{
-                    data: [totalBreakfast, totalLunch, totalDinner],
-                    backgroundColor: [
-                        'rgba(0, 212, 255, 0.8)',
-                        'rgba(0, 200, 150, 0.8)',
-                        'rgba(255, 165, 0, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(0, 212, 255, 1)',
-                        'rgba(0, 200, 150, 1)',
-                        'rgba(255, 165, 0, 1)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
-                }
-            }
-        });
-    }
-
-    function exportBillingCSV() {
-        const startDate = new Date(document.getElementById('billStartDate').value);
-        const endDate = new Date(document.getElementById('billEndDate').value);
-        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-
-        const allData = JSON.parse(localStorage.getItem('billingData') || '[]');
-        const filteredData = allData.filter(d => {
-            const date = new Date(d.date);
-            return date >= startDate && date <= endDate;
-        });
-
-        let csv = 'Date,Breakfast,Lunch,Dinner,Total People,Base Amount (₹),Tax (₹),Total Bill (₹)\n';
-
-        filteredData.forEach(d => {
-            const maxPeople = Math.max(d.breakfast, d.lunch, d.dinner);
-            const baseAmount = maxPeople * 150;
-            const tax = (baseAmount * taxRate) / 100;
-            const bill = baseAmount + tax;
-
-            csv += `${d.dateReadable},${d.breakfast},${d.lunch},${d.dinner},${maxPeople},${baseAmount.toFixed(2)},${tax.toFixed(2)},${bill.toFixed(2)}\n`;
-        });
-
-        downloadCSV(csv, `Billing_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    }
-
-    function exportBillingDaily() {
-        exportBillingCSV();
-    }
-
-    function exportBillingWeekly() {
-        const today = new Date();
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        document.getElementById('billStartDate').valueAsDate = sevenDaysAgo;
-        document.getElementById('billEndDate').valueAsDate = today;
-        loadBillingReport();
         
-        setTimeout(() => exportBillingCSV(), 500);
-    }
-
-    function exportBillingMonthly() {
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-
-        document.getElementById('billStartDate').valueAsDate = firstDay;
-        document.getElementById('billEndDate').valueAsDate = today;
-        loadBillingReport();
-
-        setTimeout(() => exportBillingCSV(), 500);
-    }
-
-    // ===== FEEDBACK FUNCTIONS =====
-    function loadFeedbackData() {
-        const period = document.getElementById('feedbackPeriod').value;
-        const date = new Date(document.getElementById('feedbackDate').value);
-
-        const allData = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-
-        let filteredData = [];
-
-        if (period === 'daily') {
-            filteredData = allData.filter(d => d.date === date.toISOString().split('T')[0]);
-        } else if (period === 'weekly') {
-            const weekStart = new Date(date);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-
-            filteredData = allData.filter(d => {
-                const dDate = new Date(d.date);
-                return dDate >= weekStart && dDate <= weekEnd;
-            });
-        } else if (period === 'monthly') {
-            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-            filteredData = allData.filter(d => {
-                const dDate = new Date(d.date);
-                return dDate >= monthStart && dDate <= monthEnd;
-            });
+        function closeContent() {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
         }
 
-        // Calculate stats
-        const avgRatings = {
-            taste: 0,
-            quality: 0,
-            quantity: 0,
-            cleanliness: 0,
-            overall: 0
-        };
+        // Removed loadTodayAndTomorrowCount function for admin.
 
-        let count = 0;
-        const itemRatings = {};
+        function onCountReportModeChange() {
+            const mode = document.getElementById('count-report-mode').value;
+            document.getElementById('count-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('count-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('count-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('count-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
 
-        filteredData.forEach(d => {
-            avgRatings.taste += d.taste;
-            avgRatings.quality += d.quality;
-            avgRatings.quantity += d.quantity;
-            avgRatings.cleanliness += d.cleanliness;
-
-            const avg = (d.taste + d.quality + d.quantity + d.cleanliness) / 4;
-            avgRatings.overall += avg;
-
-            if (!itemRatings[d.itemName]) {
-                itemRatings[d.itemName] = { count: 0, ratings: [] };
+        async function generateCountReport() {
+            const mode = document.getElementById('count-report-mode').value;
+            let start = null, end = null;
+            
+            if (mode === 'daily') {
+                const d = document.getElementById('count-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('count-report-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('count-report-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('count-report-start').value;
+                const e = document.getElementById('count-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
             }
-            itemRatings[d.itemName].count++;
-            itemRatings[d.itemName].ratings.push(avg);
 
-            count++;
-        });
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('count-report-start').value = start;
+            document.getElementById('count-report-end').value = end;
 
-        if (count > 0) {
-            avgRatings.taste /= count;
-            avgRatings.quality /= count;
-            avgRatings.quantity /= count;
-            avgRatings.cleanliness /= count;
-            avgRatings.overall /= count;
+            const tbody = document.getElementById('count-report-body');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Loading food count report...</td></tr>';
+            document.getElementById('count-report-stats').innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/food-counts?start=${start}&end=${end}`);
+                const foodCounts = await response.json();
+                
+                // Aggregate by date to combine meal data into single rows
+                const dailyAggregates = {};
+                foodCounts.forEach(c => {
+                    if (!dailyAggregates[c.date]) {
+                        dailyAggregates[c.date] = { date: c.date, breakfast: 0, lunch: 0, dinner: 0, maxPeople: 0 };
+                    }
+                    if (c.mealType === 'breakfast') dailyAggregates[c.date].breakfast = c.totalCount;
+                    if (c.mealType === 'lunch') dailyAggregates[c.date].lunch = c.totalCount;
+                    if (c.mealType === 'dinner') dailyAggregates[c.date].dinner = c.totalCount;
+                });
+                
+                const transformedData = Object.values(dailyAggregates).map(data => {
+                    data.maxPeople = Math.max(data.breakfast, data.lunch, data.dinner);
+                    return data;
+                }).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+
+                window.__filteredCountData = transformedData;
+                renderCountReport(transformedData);
+            } catch (error) {
+                console.error('Error generating count report:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Error loading count report.</td></tr>';
+                document.getElementById('count-report-stats').innerHTML = '';
+            }
         }
 
-        // Update stats
-        const statsHTML = `
-            <div class="stat-card">
-                <h3>📊 Total Feedback</h3>
-                <div class="value">${count}</div>
-                <div class="subtext">submissions</div>
-            </div>
-            <div class="stat-card">
-                <h3>😋 Avg Taste</h3>
-                <div class="value">${avgRatings.taste.toFixed(1)}/5</div>
-                <div class="subtext">rating</div>
-            </div>
-            <div class="stat-card">
-                <h3>✨ Avg Quality</h3>
-                <div class="value">${avgRatings.quality.toFixed(1)}/5</div>
-                <div class="subtext">rating</div>
-            </div>
-            <div class="stat-card">
-                <h3>📦 Avg Quantity</h3>
-                <div class="value">${avgRatings.quantity.toFixed(1)}/5</div>
-                <div class="subtext">rating</div>
-            </div>
-            <div class="stat-card">
-                <h3>🧹 Avg Cleanliness</h3>
-                <div class="value">${avgRatings.cleanliness.toFixed(1)}/5</div>
-                <div class="subtext">rating</div>
-            </div>
-            <div class="stat-card">
-                <h3>⭐ Overall Rating</h3>
-                <div class="value" style="color: var(--accent);">${avgRatings.overall.toFixed(1)}/5</div>
-                <div class="subtext">average</div>
-            </div>
-        `;
+        function renderCountReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('count-report-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data available</td></tr>';
+                document.getElementById('count-report-stats').innerHTML = '';
+                return;
+            }
 
-        document.getElementById('feedbackStats').innerHTML = statsHTML;
+            let totalBreakfast = 0, totalLunch = 0, totalDinner = 0;
+            data.forEach(r => {
+                totalBreakfast += r.breakfast || 0;
+                totalLunch += r.lunch || 0;
+                totalDinner += r.dinner || 0;
+            });
 
-        // Update table
-        const tableRows = filteredData.map(d => {
-            const avg = ((d.taste + d.quality + d.quantity + d.cleanliness) / 4).toFixed(1);
-            return `
-                <tr>
-                    <td>${d.dateReadable}</td>
-                    <td><span class="badge badge-success">${d.mealType}</span></td>
-                    <td>${d.itemName}</td>
-                    <td><span class="badge badge-success">${d.taste}/5</span></td>
-                    <td><span class="badge badge-success">${d.quality}/5</span></td>
-                    <td><span class="badge badge-success">${d.quantity}/5</span></td>
-                    <td><span class="badge badge-success">${d.cleanliness}/5</span></td>
-                    <td><strong>${avg}/5</strong></td>
-                </tr>
+            const avgBreakfast = data.length > 0 ? (totalBreakfast / data.length).toFixed(0) : 0;
+            const avgLunch = data.length > 0 ? (totalLunch / data.length).toFixed(0) : 0;
+            const avgDinner = data.length > 0 ? (totalDinner / data.length).toFixed(0) : 0;
+
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Records</div>
+                    <div class="value">${data.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Breakfast</div>
+                    <div class="value">${avgBreakfast}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Lunch</div>
+                    <div class="value">${avgLunch}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Dinner</div>
+                    <div class="value">${avgDinner}</div>
+                </div>
             `;
-        }).join('');
+            document.getElementById('count-report-stats').innerHTML = stats;
 
-        document.getElementById('feedbackBody').innerHTML = tableRows || '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">No feedback data for this period</td></tr>';
+            document.getElementById('count-report-body').innerHTML = data.map(r => `
+                <tr>
+                    <td>${new Date(r.date).toLocaleDateString('en-IN')}</td>
+                    <td>${r.breakfast}</td>
+                    <td>${r.lunch}</td>
+                    <td>${r.dinner}</td>
+                    <td><strong>${r.maxPeople}</strong></td>
+                </tr>
+            `).join('');
+        }
 
-        // Update charts
-        updateFeedbackCharts(filteredData, itemRatings);
-    }
+        async function exportCountCSV() {
+            const currentStart = document.getElementById('count-report-start').value;
+            const currentEnd = document.getElementById('count-report-end').value;
+            window.location.href = `/api/food-counts/csv?start=${currentStart}&end=${currentEnd}`;
+        }
 
-    function updateFeedbackCharts(data, itemRatings) {
-        // Criteria Chart
-        const criteriaCtx = document.getElementById('feedbackCriteriaChart').getContext('2d');
-        if (feedbackCriteriaChart) feedbackCriteriaChart.destroy();
+        function onFeedbackReportModeChange() {
+            const mode = document.getElementById('feedback-report-mode').value;
+            document.getElementById('feedback-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('feedback-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('feedback-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('feedback-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
 
-        const avgTaste = data.reduce((sum, d) => sum + d.taste, 0) / (data.length || 1);
-        const avgQuality = data.reduce((sum, d) => sum + d.quality, 0) / (data.length || 1);
-        const avgQuantity = data.reduce((sum, d) => sum + d.quantity, 0) / (data.length || 1);
-        const avgCleanliness = data.reduce((sum, d) => sum + d.cleanliness, 0) / (data.length || 1);
-
-        feedbackCriteriaChart = new Chart(criteriaCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Taste', 'Quality', 'Quantity', 'Cleanliness'],
-                datasets: [{
-                    label: 'Average Rating',
-                    data: [avgTaste, avgQuality, avgQuantity, avgCleanliness],
-                    borderColor: 'rgba(0, 212, 255, 1)',
-                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 5,
-                        ticks: { color: 'rgba(160, 170, 196, 1)' },
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' }
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
-                }
+        async function generateFeedbackReport() {
+            const mode = document.getElementById('feedback-report-mode').value;
+            let start = null, end = null;
+            
+            if (mode === 'daily') {
+                const d = document.getElementById('feedback-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('feedback-report-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('feedback-report-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('feedback-report-start').value;
+                const e = document.getElementById('feedback-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
             }
-        });
 
-        // Top Items Chart
-        const topItems = Object.entries(itemRatings)
-            .map(([name, stats]) => ({
-                name,
-                avg: stats.ratings.reduce((a, b) => a + b, 0) / stats.ratings.length
-            }))
-            .sort((a, b) => b.avg - a.avg)
-            .slice(0, 8);
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('feedback-report-start').value = start;
+            document.getElementById('feedback-report-end').value = end;
 
-        const itemsCtx = document.getElementById('topItemsChart').getContext('2d');
-        if (topItemsChart) topItemsChart.destroy();
+            const tbody = document.getElementById('feedback-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Loading feedback...</td></tr>';
+            document.getElementById('feedback-report-stats').innerHTML = '';
+            document.getElementById('feedback-charts-container').style.display = 'none';
 
-        topItemsChart = new Chart(itemsCtx, {
-            type: 'barh',
-            data: {
-                labels: topItems.map(i => i.name),
-                datasets: [{
-                    label: 'Average Rating',
-                    data: topItems.map(i => i.avg),
-                    backgroundColor: 'rgba(0, 200, 150, 0.8)',
-                    borderColor: 'rgba(0, 200, 150, 1)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        max: 5,
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    },
-                    y: {
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
-                }
+            try {
+                const response = await fetch(`/api/feedback?start=${start}&end=${end}`);
+                const filtered = await response.json();
+                
+                window.__filteredFeedbackData = filtered;
+                renderFeedbackReport(filtered);
+            } catch (error) {
+                console.error('Error generating feedback report:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #dc3545;">Error loading feedback report.</td></tr>';
+                document.getElementById('feedback-report-stats').innerHTML = '';
+                document.getElementById('feedback-charts-container').style.display = 'none';
             }
-        });
+        }
 
-        // Trend Chart
-        const dailyData = {};
-        data.forEach(d => {
-            if (!dailyData[d.date]) dailyData[d.date] = [];
-            dailyData[d.date].push((d.taste + d.quality + d.quantity + d.cleanliness) / 4);
-        });
-
-        const sortedDates = Object.keys(dailyData).sort();
-        const dailyAvgs = sortedDates.map(date => 
-            dailyData[date].reduce((a, b) => a + b, 0) / dailyData[date].length
-        );
-
-        const trendCtx = document.getElementById('feedbackTrendChart').getContext('2d');
-        if (feedbackTrendChart) feedbackTrendChart.destroy();
-
-        feedbackTrendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: sortedDates.map(d => new Date(d).toLocaleDateString('en-IN')),
-                datasets: [{
-                    label: 'Average Rating',
-                    data: dailyAvgs,
-                    borderColor: 'rgba(255, 165, 0, 1)',
-                    backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 5,
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(42, 63, 95, 0.3)' },
-                        ticks: { color: 'rgba(160, 170, 196, 1)' }
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: 'rgba(232, 238, 247, 1)' } }
-                }
+        function renderFeedbackReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                document.getElementById('feedback-report-stats').innerHTML = '';
+                document.getElementById('feedback-charts-container').style.display = 'none';
+                return;
             }
-        });
-    }
 
-    function exportFeedbackCSV() {
-        const period = document.getElementById('feedbackPeriod').value;
-        const date = new Date(document.getElementById('feedbackDate').value);
+            let breakfastRatings = data.filter(f => f.breakfastRating).map(f => f.breakfastRating);
+            let lunchRatings = data.filter(f => f.lunchRating).map(f => f.lunchRating);
+            let dinnerRatings = data.filter(f => f.dinnerRating).map(f => f.dinnerRating);
+            
+            const avgBreakfast = breakfastRatings.length > 0 ? (breakfastRatings.reduce((a, b) => a + b, 0) / breakfastRatings.length).toFixed(1) : 0;
+            const avgLunch = lunchRatings.length > 0 ? (lunchRatings.reduce((a, b) => a + b, 0) / lunchRatings.length).toFixed(1) : 0;
+            const avgDinner = dinnerRatings.length > 0 ? (dinnerRatings.reduce((a, b) => a + b, 0) / dinnerRatings.length).toFixed(1) : 0;
+            
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Feedbacks</div>
+                    <div class="value">${data.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg. Breakfast Rating</div>
+                    <div class="value">${avgBreakfast}/5</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg. Lunch Rating</div>
+                    <div class="value">${avgLunch}/5</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg. Dinner Rating</div>
+                    <div class="value">${avgDinner}/5</div>
+                </div>
+            `;
+            document.getElementById('feedback-report-stats').innerHTML = stats;
 
-        const allData = JSON.parse(localStorage.getItem('feedbackData') || '[]');
+            document.getElementById('feedback-body').innerHTML = data.map(f => `
+                <tr>
+                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                    <td>${f.studentName || '-'}</td>
+                    <td>${f.rollNumber || '-'}</td>
+                    <td><span class="rating-badge" style="background: #ffcc00; color: #333;">${f.breakfastRating || '-'}/5</span></td>
+                    <td><span class="rating-badge" style="background: #ffcc00; color: #333;">${f.lunchRating || '-'}/5</span></td>
+                    <td><span class="rating-badge" style="background: #ffcc00; color: #333;">${f.dinnerRating || '-'}/5</span></td>
+                    <td>${f.comments || '-'}</td>
+                </tr>
+            `).join('');
 
-        let filteredData = [];
+            renderFeedbackCharts(data);
+        }
 
-        if (period === 'daily') {
-            filteredData = allData.filter(d => d.date === date.toISOString().split('T')[0]);
-        } else if (period === 'weekly') {
-            const weekStart = new Date(date);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
+        function renderFeedbackCharts(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('feedback-charts-container').style.display = 'none';
+                return;
+            }
 
-            filteredData = allData.filter(d => {
-                const dDate = new Date(d.date);
-                return dDate >= weekStart && dDate <= weekEnd;
+            document.getElementById('feedback-charts-container').style.display = 'grid';
+
+            let breakfastRatings = data.filter(f => f.breakfastRating).map(f => f.breakfastRating);
+            let lunchRatings = data.filter(f => f.lunchRating).map(f => f.lunchRating);
+            let dinnerRatings = data.filter(f => f.dinnerRating).map(f => f.dinnerRating);
+            
+            const avgBreakfast = breakfastRatings.length > 0 ? (breakfastRatings.reduce((a, b) => a + b, 0) / breakfastRatings.length) : 0;
+            const avgLunch = lunchRatings.length > 0 ? (lunchRatings.reduce((a, b) => a + b, 0) / lunchRatings.length) : 0;
+            const avgDinner = dinnerRatings.length > 0 ? (dinnerRatings.reduce((a, b) => a + b, 0) / dinnerRatings.length) : 0;
+
+            const mealCtx = document.getElementById('mealRatingChart').getContext('2d');
+            if (mealRatingChartInstance) mealRatingChartInstance.destroy();
+            mealRatingChartInstance = new Chart(mealCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Breakfast', 'Lunch', 'Dinner'],
+                    datasets: [{
+                        label: 'Average Rating (out of 5)',
+                        data: [avgBreakfast.toFixed(2), avgLunch.toFixed(2), avgDinner.toFixed(2)],
+                        backgroundColor: ['#1abc9c', '#16a085', '#f093fb'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: { y: { beginAtZero: true, max: 5 } }
+                }
             });
-        } else if (period === 'monthly') {
-            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-            filteredData = allData.filter(d => {
-                const dDate = new Date(d.date);
-                return dDate >= monthStart && dDate <= monthEnd;
+            const allRatings = [...breakfastRatings, ...lunchRatings, ...dinnerRatings];
+            const ratingCounts = {
+                '5': allRatings.filter(r => r === 5).length,
+                '4': allRatings.filter(r => r === 4).length,
+                '3': allRatings.filter(r => r === 3).length,
+                '2': allRatings.filter(r => r === 2).length,
+                '1': allRatings.filter(r => r === 1).length,
+            };
+
+            const ratingCtx = document.getElementById('ratingDistributionChart').getContext('2d');
+            if (ratingDistributionChartInstance) ratingDistributionChartInstance.destroy();
+            ratingDistributionChartInstance = new Chart(ratingCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+                    datasets: [{
+                        data: [ratingCounts['5'], ratingCounts['4'], ratingCounts['3'], ratingCounts['2'], ratingCounts['1']],
+                        backgroundColor: ['#28a745', '#20c997', '#ffc107', '#fd7e14', '#dc3545'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'right' } }
+                }
             });
         }
 
-        let csv = 'Date,Meal Type,Item Name,Taste,Quality,Quantity,Cleanliness,Average Rating\n';
+        async function exportFeedbackCSV() {
+            const currentStart = document.getElementById('feedback-report-start').value;
+            const currentEnd = document.getElementById('feedback-report-end').value;
+            window.location.href = `/api/feedback/csv?start=${currentStart}&end=${currentEnd}`;
+        }
 
-        filteredData.forEach(d => {
-            const avg = ((d.taste + d.quality + d.quantity + d.cleanliness) / 4).toFixed(2);
-            csv += `${d.dateReadable},${d.mealType},"${d.itemName}",${d.taste},${d.quality},${d.quantity},${d.cleanliness},${avg}\n`;
-        });
+        // ===== VENDOR FINES FUNCTIONS =====
 
-        downloadCSV(csv, `Feedback_Report_${period}_${new Date().toISOString().split('T')[0]}.csv`);
-    }
+        function onVendorFineReportModeChange() {
+            const mode = document.getElementById('vendor-fine-report-mode').value;
+            document.getElementById('vendor-fine-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
 
-    function exportFeedbackDaily() {
-        document.getElementById('feedbackPeriod').value = 'daily';
-        loadFeedbackData();
-        setTimeout(() => exportFeedbackCSV(), 500);
-    }
+        async function generateVendorFineReport(initialStart = null, initialEnd = null, initialStatus = 'all') {
+            const mode = document.getElementById('vendor-fine-report-mode').value;
+            const responseStatus = document.getElementById('vendor-fine-response-status').value;
+            let start = initialStart, end = initialEnd;
 
-    function exportFeedbackWeekly() {
-        document.getElementById('feedbackPeriod').value = 'weekly';
-        loadFeedbackData();
-        setTimeout(() => exportFeedbackCSV(), 500);
-    }
+            if (!initialStart || !initialEnd) { // Only calculate dates if not provided by initial call
+                if (mode === 'daily') {
+                    const d = document.getElementById('vendor-fine-report-date').value;
+                    if (!d) { alert('Select a date'); return; }
+                    start = end = d;
+                } else if (mode === 'weekly') {
+                    const d = document.getElementById('vendor-fine-report-week').value;
+                    if (!d) { alert('Select a week date'); return; }
+                    const dt = new Date(d);
+                    const day = dt.getDay();
+                    const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
+                    const monday = new Date(dt);
+                    monday.setDate(dt.getDate() - diffToMonday);
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    start = monday.toISOString().slice(0,10);
+                    end = sunday.toISOString().slice(0,10);
+                } else if (mode === 'monthly') {
+                    const m = document.getElementById('vendor-fine-report-month').value;
+                    if (!m) { alert('Select a month'); return; }
+                    start = m + '-01';
+                    const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                    const lastDay = new Date(yy, mm, 0).getDate();
+                    end = `${m}-${String(lastDay).padStart(2,'0')}`;
+                } else if (mode === 'custom') {
+                    const s = document.getElementById('vendor-fine-report-start').value;
+                    const e = document.getElementById('vendor-fine-report-end').value;
+                    if (!s || !e) { alert('Select start and end date'); return; }
+                    if (s > e) { alert('Start date must be <= end date'); return; }
+                    start = s; end = e;
+                }
+            }
 
-    function exportFeedbackMonthly() {
-        document.getElementById('feedbackPeriod').value = 'monthly';
-        loadFeedbackData();
-        setTimeout(() => exportFeedbackCSV(), 500);
-    }
+            // Set the inputs for CSV export
+            document.getElementById('vendor-fine-report-start').value = start;
+            document.getElementById('vendor-fine-report-end').value = end;
+            document.getElementById('vendor-fine-response-status').value = responseStatus; // Ensure this is set for export to use
 
-    // ===== CSV DOWNLOAD FUNCTION =====
-    function downloadCSV(csv, filename) {
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
+            const tbody = document.getElementById('admin-fines-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;">Loading fines...</td></tr>';
 
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
+            try {
+                const finesResponse = await fetch(`/api/fines?start=${start}&end=${end}&response_status=${responseStatus}`);
+                if (!finesResponse.ok) {
+                    const errorText = await finesResponse.text();
+                    throw new Error(`HTTP error! status: ${finesResponse.status} - ${errorText}`);
+                }
+                const fines = await finesResponse.json();
+                
+                currentVendorFinesData = fines; // Store for CSV export
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-</script>
+                if (fines.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;">No fines found for the selected criteria.</td></tr>';
+                    return;
+                }
 
+                renderVendorFines(fines);
+
+            } catch (error) {
+                console.error('Error generating vendor fine report:', error);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #dc3545; padding: 30px;">Error loading fines: ${error.message}</td></tr>`;
+            }
+        }
+
+        function renderVendorFines(fines) {
+            const tbody = document.getElementById('admin-fines-table-body');
+            tbody.innerHTML = '';
+
+            if (fines.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 30px;">No fines found for the selected criteria.</td></tr>';
+                return;
+            }
+
+            const rowsHtml = fines.map((fine) => {
+                const responseText = fine.vendorResponse || '-';
+                const responseStatus = fine.responseStatus || 'Not Submitted';
+                const imposedBy = fine.imposedBy || 'N/A'; // Assuming 'imposedBy' field is available in fine data
+
+                return `
+                    <tr>
+                        <td>${new Date(fine.date).toLocaleDateString('en-IN')}</td>
+                        <td>${fine.meal.charAt(0).toUpperCase() + fine.meal.slice(1)}</td>
+                        <td>${fine.reason.replace(/-/g, ' ')}</td>
+                        <td>${imposedBy}</td>
+                        <td><span style="color: #dc3545; font-weight: 700;">₹${fine.amount}</span></td>
+                        <td><div style="max-height: 60px; overflow-y: auto;">${responseText}</div></td>
+                        <td><span class="rating-badge" style="background: ${responseStatus === 'Submitted' ? '#28a745' : '#ffc107'}; color: white;">${responseStatus}</span></td>
+                    </tr>
+                `;
+            }).join('');
+            tbody.innerHTML = rowsHtml;
+        }
+
+        // The submitVendorFineResponse function is still present in the JS,
+        // but the admin UI does not provide an interface to call it directly.
+        // It's meant for the vendor's interaction.
+        async function submitVendorFineResponse(fineId) {
+            alert('Admin cannot submit vendor responses directly through this interface.');
+            return;
+            // Original logic for submission (kept for reference, but not active for admin)
+            /*
+            const textarea = document.getElementById(`response-${fineId}`);
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                alert('Please enter your response');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/vendor-responses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fine_id: fineId,
+                        vendor_response: text,
+                        status: 'Submitted'
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to submit response');
+                }
+
+                const msg = document.getElementById('success-msg-fine');
+                msg.textContent = '✓ Your response has been submitted successfully!';
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 3000);
+
+                textarea.disabled = true;
+                const btn = textarea.parentElement.querySelector('.btn-submit');
+                btn.textContent = '✓ Response Submitted';
+                btn.disabled = true;
+
+                generateVendorFineReport(
+                    document.getElementById('vendor-fine-report-start').value,
+                    document.getElementById('vendor-fine-report-end').value,
+                    document.getElementById('vendor-fine-response-status').value
+                );
+
+            } catch (error) {
+                console.error('Error submitting vendor response:', error);
+                alert('Error submitting response: ' + error.message);
+            }
+            */
+        }
+
+        async function exportVendorFinesCSV() {
+            const currentStart = document.getElementById('vendor-fine-report-start').value;
+            const currentEnd = document.getElementById('vendor-fine-report-end').value;
+            const responseStatus = document.getElementById('vendor-fine-response-status').value;
+            window.location.href = `/api/fines/csv?start=${currentStart}&end=${currentEnd}&response_status=${responseStatus}`;
+        }
+
+        // ===== BILLING FUNCTIONS (Reused from admin.html) =====
+
+        function onBillingReportModeChange() {
+            const mode = document.getElementById('billing-report-mode').value;
+            document.getElementById('billing-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('billing-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('billing-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('billing-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
+
+        async function generateBillingReport() {
+            const mode = document.getElementById('billing-report-mode').value;
+            let start = null, end = null;
+            
+            if (mode === 'daily') {
+                const d = document.getElementById('billing-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('billing-report-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('billing-report-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('billing-report-start').value;
+                const e = document.getElementById('billing-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
+            }
+
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('billing-report-start').value = start;
+            document.getElementById('billing-report-end').value = end;
+
+            document.getElementById('billing-summary-container').innerHTML = '<p style="text-align: center; color: #999;">Loading billing data...</p>';
+            document.getElementById('billing-table').style.display = 'none';
+            document.getElementById('billing-charts-container').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/billing?start=${start}&end=${end}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+                const billingData = await response.json();
+
+                currentBillingData = billingData; // Store for PDF/CSV export
+                renderBillingReport(billingData);
+            } catch (error) {
+                console.error('Error generating billing report:', error);
+                document.getElementById('billing-summary-container').innerHTML = `<p style="text-align: center; color: #dc3545;">Error loading billing data: ${error.message}</p>`;
+                document.getElementById('billing-table').style.display = 'none';
+                document.getElementById('billing-charts-container').style.display = 'none';
+            }
+        }
+
+        function renderBillingReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('billing-table').style.display = 'none';
+                document.getElementById('billing-summary-container').innerHTML = '<p style="text-align: center; color: #999;">No billing data available</p>';
+                document.getElementById('billing-charts-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('billing-table').style.display = 'table';
+
+            let totalGrossAmount = 0, totalFines = 0, totalNetAmount = 0;
+            data.forEach(d => {
+                totalGrossAmount += (d.grossAmount || 0);
+                totalFines += (d.fineAmount || 0);
+                totalNetAmount += (d.netAmount || 0);
+            });
+
+            const totalPeopleFed = data.reduce((sum, d) => sum + (d.maxPeopleFed || 0), 0);
+
+            const summaryHTML = `
+                <div class="billing-summary">
+                    <h4>Billing Summary</h4>
+                    <div class="billing-grid">
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total People Fed</div>
+                            <div class="billing-item-value">${totalPeopleFed}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total Gross Amount (₹)</div>
+                            <div class="billing-item-value">₹${totalGrossAmount.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total Fines (₹)</div>
+                            <div class="billing-item-value" style="color: #dc3545;">-₹${totalFines.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Net Amount (₹)</div>
+                            <div class="billing-item-value" style="color: #28a745; font-size: 1.6rem;">₹${totalNetAmount.toLocaleString('en-IN')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('billing-summary-container').innerHTML = summaryHTML;
+
+            document.getElementById('billing-body').innerHTML = data.map(d => `
+                <tr>
+                    <td>${new Date(d.date).toLocaleDateString('en-IN')}</td>
+                    <td>${d.breakfastCount || 0}</td>
+                    <td>${d.lunchCount || 0}</td>
+                    <td>${d.dinnerCount || 0}</td>
+                    <td><strong>${d.maxPeopleFed || 0}</strong></td>
+                    <td>₹${(d.grossAmount || 0).toLocaleString('en-IN')}</td>
+                    <td>${(d.fineAmount || 0) > 0 ? `₹${(d.fineAmount || 0).toLocaleString('en-IN')}` : '-'}</td>
+                    <td style="font-weight: 600; ${(d.netAmount || 0) < 0 ? 'color: #dc3545;' : 'color: #28a745;'}">₹${(d.netAmount || 0).toLocaleString('en-IN')}</td>
+                </tr>
+            `).join('');
+
+            renderBillingCharts(data);
+        }
+
+        function renderBillingCharts(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('billing-charts-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('billing-charts-container').style.display = 'grid';
+
+            const dates = data.map(d => new Date(d.date).toLocaleDateString('en-IN'));
+            const grossAmounts = data.map(d => (d.grossAmount || 0));
+            const fineAmounts = data.map(d => (d.fineAmount || 0));
+
+            const trendCtx = document.getElementById('billingTrendChart').getContext('2d');
+            if (billingTrendChartInstance) billingTrendChartInstance.destroy();
+            billingTrendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Gross Amount (₹)',
+                        data: grossAmounts,
+                        borderColor: '#1abc9c',
+                        backgroundColor: 'rgba(26, 188, 156, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#666' } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666' } },
+                        x: { grid: { color: '#eee' }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+
+            const revenueCtx = document.getElementById('revenueFinesChart').getContext('2d');
+            if (revenueFinesChartInstance) revenueFinesChartInstance.destroy();
+            revenueFinesChartInstance = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Gross Revenue (₹)',
+                        data: grossAmounts,
+                        backgroundColor: '#28a745'
+                    }, {
+                        label: 'Fines (₹)',
+                        data: fineAmounts,
+                        backgroundColor: '#dc3545'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#666' } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666' } },
+                        x: { grid: { color: '#eee' }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+        }
+
+        async function exportBillingCSV() {
+            const currentStart = document.getElementById('billing-report-start').value;
+            const currentEnd = document.getElementById('billing-report-end').value;
+            window.location.href = `/api/billing/csv?start=${currentStart}&end=${currentEnd}`;
+        }
+
+        function generateBillingPDF() {
+            const data = currentBillingData;
+            if (!data || data.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let totalGrossAmount = 0,
+                totalFineAmount = 0,
+                totalNetAmount = 0;
+            data.forEach(d => {
+                totalGrossAmount += (d.grossAmount || 0);
+                totalFineAmount += (d.fineAmount || 0);
+                totalNetAmount += (d.netAmount || 0);
+            });
+            const totalPeopleFed = data.reduce((sum, d) => sum + (d.maxPeopleFed || 0), 0);
+
+            const mode = document.getElementById('billing-report-mode').value;
+            let start = null,
+                end = null;
+            if (mode === 'daily') {
+                start = end = document.getElementById('billing-report-date').value;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('billing-report-week').value;
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                start = document.getElementById('billing-report-month').value + '-01';
+                end = new Date(new Date(start).getFullYear(), new Date(start).getMonth() + 1, 0).toISOString().split('T')[0];
+            } else if (mode === 'custom') {
+                start = document.getElementById('billing-report-start').value;
+                end = document.getElementById('billing-report-end').value;
+            }
+
+            const content = `
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #1abc9c; text-align: center; }
+                        .summary { background: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 5px; }
+                        .summary-item { display: inline-block; width: 23%; margin: 10px 1%; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th { background: #1abc9c; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        tr:hover { background: #f9f9f9; }
+                        .total-row { font-weight: bold; background: #e8f5e9; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Billing Summary Report</h1>
+                    <p><strong>Generated on:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
+                    <p><strong>Report Period:</strong> ${new Date(start).toLocaleDateString('en-IN')} to ${new Date(end).toLocaleDateString('en-IN')}</p>
+                    
+                    <div class="summary">
+                        <div class="summary-item">
+                            <strong>Total People Fed:</strong><br> ${totalPeopleFed}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Total Gross Amount:</strong><br> ₹${totalGrossAmount.toLocaleString('en-IN')}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Total Fines:</strong><br> ₹${totalFineAmount.toLocaleString('en-IN')}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Net Amount:</strong><br> <span style="color: #28a745; font-size: 1.2rem;">₹${totalNetAmount.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Breakfast</th>
+                                <th>Lunch</th>
+                                <th>Dinner</th>
+                                <th>Max People</th>
+                                <th>Gross Amount (₹)</th>
+                                <th>Fine (₹)</th>
+                                <th>Net Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(d => `
+                                <tr>
+                                    <td>${new Date(d.date).toLocaleDateString('en-IN')}</td>
+                                    <td>${d.breakfastCount || 0}</td>
+                                    <td>${d.lunchCount || 0}</td>
+                                    <td>${d.dinnerCount || 0}</td>
+                                    <td><strong>${d.maxPeopleFed || 0}</strong></td>
+                                    <td>₹${(d.grossAmount || 0).toLocaleString('en-IN')}</td>
+                                    <td>₹${(d.fineAmount || 0)}</td>
+                                    <td>₹${(d.netAmount || 0)}</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td colspan="5">TOTAL</td>
+                                <td>₹${totalGrossAmount.toLocaleString('en-IN')}</td>
+                                <td>₹${totalFineAmount.toLocaleString('en-IN')}</td>
+                                <td>₹${totalNetAmount.toLocaleString('en-IN')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const element = document.createElement('div');
+            element.innerHTML = content;
+            const opt = {
+                margin: 10,
+                filename: `billing_report_${new Date().toISOString().slice(0, 10)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
 </body>
 </html>

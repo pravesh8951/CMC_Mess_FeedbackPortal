@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vendor Dashboard - CMC Mess Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -11,6 +13,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f7fa;
             color: #333;
+            min-height: 100vh; /* Ensure body takes full height */
         }
         
         header {
@@ -21,6 +24,9 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky; /* Keep header visible */
+            top: 0;
+            z-index: 100;
         }
         
         header h1 {
@@ -88,7 +94,7 @@
         
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
@@ -249,13 +255,29 @@
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
         }
         
-        table {
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            /* margin-right: 10px; Removed as it's part of filter-actions grid */
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .feedback-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
         
-        th {
+        .feedback-table th {
             background: #1abc9c;
             color: white;
             padding: 12px;
@@ -263,35 +285,22 @@
             font-weight: 600;
         }
         
-        td {
+        .feedback-table td {
             padding: 12px;
             border-bottom: 1px solid #eee;
         }
         
-        tr:hover {
+        .feedback-table tr:hover {
             background: #f9f9f9;
         }
         
-        .badge {
+        .rating-badge {
+            background: #ffcc00;
+            color: #333;
             padding: 4px 10px;
             border-radius: 12px;
             font-weight: 600;
             font-size: 0.85rem;
-        }
-        
-        .badge.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .badge.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .badge.danger {
-            background: #f8d7da;
-            color: #721c24;
         }
         
         .success-msg {
@@ -304,13 +313,29 @@
             display: none;
         }
         
-        .date-range {
+        .date-range-inputs { /* Added for custom date range inputs */
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-section { /* Added for general filter styling */
+            background: #f8fcfc;
+            border: 1px solid #e1eef6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 1rem;
+            align-items: end;
         }
-        
+        .filter-actions { /* For buttons within filter section */
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -336,24 +361,129 @@
             font-weight: bold;
             color: #1abc9c;
         }
-        
-        .fine-card {
-            background: #f9f9f9;
-            padding: 15px;
+
+        .summary-box {
+            background: #e8f5e9;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ff6b6b;
+            border-left: 4px solid #1abc9c;
+            margin-bottom: 20px;
         }
-        
-        .fine-card h4 {
+
+        .summary-box h4 {
+            color: #1abc9c;
+            margin-bottom: 10px;
+        }
+
+        .summary-box p {
+            color: #555;
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        .fine-response-box {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
+        }
+
+        .fine-response-box h4 {
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
-        
-        .fine-card p {
+
+        .fine-response-box .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .fine-detail {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 2px solid #ff9800;
+        }
+
+        .fine-detail label {
+            font-size: 0.85rem;
             color: #666;
-            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .fine-detail .value { /* Changed value to class for consistency */
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Adjusted min-width for better responsiveness */
+            gap: 1.5rem; /* Adjusted gap */
+            margin-bottom: 2rem;
+        }
+
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 12px; /* Consistent with other cards */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-wrapper h4 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .chart-wrapper canvas {
+            max-height: 350px; /* Adjusted max-height */
+        }
+
+        .billing-summary {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 20px;
+        }
+
+        .billing-summary h4 {
+            color: #2196f3;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .billing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .billing-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border-bottom: 2px solid #2196f3;
+        }
+
+        .billing-item-label {
+            color: #666;
+            font-size: 0.85rem;
             margin-bottom: 5px;
+        }
+
+        .billing-item-value {
+            color: #2196f3;
+            font-weight: bold;
+            font-size: 1.4rem;
         }
         
         @media (max-width: 768px) {
@@ -370,7 +500,14 @@
                 grid-template-columns: 1fr;
             }
             
-            .form-row {
+            .form-row, .filter-section, .filter-actions { /* Added filter-actions */
+                grid-template-columns: 1fr;
+            }
+            .filter-actions button {
+                width: 100%; /* Make buttons full width in mobile */
+            }
+
+            .chart-row {
                 grid-template-columns: 1fr;
             }
         }
@@ -383,7 +520,7 @@
         <div class="header-info">
             <div class="user-info">
                 <div class="name" id="user-name">Loading...</div>
-                <small id="mess-name">Authorized Vendor</small>
+                <small id="mess-name">Your Mess</small>
             </div>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
@@ -394,43 +531,36 @@
         <!-- Welcome Section -->
         <div class="welcome-section">
             <h2>Welcome Back, <span id="user-greeting">Vendor</span>!</h2>
-            <p>Manage your mess, view feedback, and handle fines and billing information.</p>
+            <p>Manage your food counts, view student feedback, respond to fines, and track billing information.</p>
         </div>
         
         <!-- Features Grid -->
         <div class="features-grid">
             <div class="feature-card" onclick="showContent('view-food-counts')">
                 <div class="feature-icon">📊</div>
-                <h3>View Food Counts</h3>
-                <p>Check today's, next day's, and historical food counts with quality ratings.</p>
+                <h3>Food Count & Today/Tomorrow</h3>
+                <p>View today's and tomorrow's food counts updated by warden with historical data.</p>
                 <button class="btn-action">View Counts</button>
             </div>
 
             <div class="feature-card" onclick="showContent('view-feedback')">
                 <div class="feature-icon">📝</div>
-                <h3>View Student Feedback</h3>
-                <p>See all feedback given by students about food quality and service.</p>
+                <h3>Student Feedback</h3>
+                <p>See meal-wise feedback ratings from students with analysis and reports.</p>
                 <button class="btn-action">View Feedback</button>
-            </div>
-            
-            <div class="feature-card" onclick="showContent('give-justification')">
-                <div class="feature-icon">💬</div>
-                <h3>Give Justifications</h3>
-                <p>Provide explanations for quality deviations and complaints.</p>
-                <button class="btn-action">Submit Justification</button>
             </div>
             
             <div class="feature-card" onclick="showContent('view-fines')">
                 <div class="feature-icon">⚖️</div>
-                <h3>View Fines</h3>
-                <p>Review fines imposed by the warden and provide responses.</p>
+                <h3>View Fines & Respond</h3>
+                <p>Review imposed fines and provide counter-feedback or justifications.</p>
                 <button class="btn-action">View Fines</button>
             </div>
             
             <div class="feature-card" onclick="showContent('view-billing')">
                 <div class="feature-icon">💰</div>
-                <h3>View Billing</h3>
-                <p>Check your billing summary and payment details.</p>
+                <h3>Billing & Payment</h3>
+                <p>Check daily/weekly/monthly billing with PDF summary and CSV export.</p>
                 <button class="btn-action">View Billing</button>
             </div>
         </div>
@@ -440,32 +570,32 @@
         <!-- View Food Counts Section -->
         <div id="view-food-counts" class="content-section">
             <div class="content-header">
-                <h2>📊 Food Counts & Quality</h2>
+                <h2>📊 Food Count Overview</h2>
                 <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
             </div>
 
             <!-- Today & Next Day Summary -->
             <div class="form-section">
-                <h3>Today & Next Day Overview</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div id="today-summary" class="stat-box" style="background: #e8f5e9; border-left: 4px solid #28a745;">
-                        <div class="label">Today's Count</div>
-                        <div style="font-size: 0.9rem; margin-top: 10px; color: #555;">Loading...</div>
+                <h3>Today & Tomorrow's Food Count</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div id="today-box" class="summary-box">
+                        <h4>📅 Today</h4>
+                        <p id="today-content">Loading...</p>
                     </div>
-                    <div id="nextday-summary" class="stat-box" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
-                        <div class="label">Next Day's Count</div>
-                        <div style="font-size: 0.9rem; margin-top: 10px; color: #555;">Loading...</div>
+                    <div id="tomorrow-box" class="summary-box">
+                        <h4>📅 Tomorrow</h4>
+                        <p id="tomorrow-content">Loading...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- History Filter -->
+            <!-- Historical Food Counts -->
             <div class="form-section">
                 <h3>View Historical Food Counts</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                <div class="filter-section"> <!-- Changed from date-range to filter-section -->
                     <div class="form-group">
-                        <label for="vendor-count-mode">Report Type</label>
-                        <select id="vendor-count-mode" onchange="onVendorCountModeChange()">
+                        <label for="count-report-mode">Report Type</label>
+                        <select id="count-report-mode" onchange="onCountReportModeChange()">
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
@@ -473,69 +603,67 @@
                         </select>
                     </div>
 
-                    <div class="form-group" id="vendor-count-date-ctrl">
-                        <label for="vendor-count-date">Select Date</label>
-                        <input type="date" id="vendor-count-date">
+                    <div class="form-group" id="count-control-date">
+                        <label for="count-report-date">Select Date</label>
+                        <input type="date" id="count-report-date">
                     </div>
 
-                    <div class="form-group" id="vendor-count-week-ctrl" style="display:none;">
-                        <label for="vendor-count-week">Week Date</label>
-                        <input type="date" id="vendor-count-week">
+                    <div class="form-group" id="count-control-week" style="display:none;">
+                        <label for="count-report-week">Week Date</label>
+                        <input type="date" id="count-report-week">
                     </div>
 
-                    <div class="form-group" id="vendor-count-month-ctrl" style="display:none;">
-                        <label for="vendor-count-month">Select Month</label>
-                        <input type="month" id="vendor-count-month">
+                    <div class="form-group" id="count-control-month" style="display:none;">
+                        <label for="count-report-month">Select Month</label>
+                        <input type="month" id="count-report-month">
                     </div>
 
-                    <div class="form-group" id="vendor-count-custom-ctrl" style="display:none;">
-                        <label>Range: From-To</label>
-                        <div style="display:flex; gap:8px;">
-                            <input type="date" id="vendor-count-start" style="flex:1;">
-                            <input type="date" id="vendor-count-end" style="flex:1;">
+                    <div class="form-group" id="count-control-custom" style="display:none;">
+                        <label>Custom Range</label>
+                        <div class="date-range-inputs">
+                            <input type="date" id="count-report-start">
+                            <input type="date" id="count-report-end">
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
-                        <button class="btn-action" onclick="generateVendorCountReport()">Search</button>
-                        <button class="btn-secondary" onclick="exportVendorCountCSV()">Export CSV</button>
+                    <div class="filter-actions">
+                        <button class="btn-action" onclick="generateCountReport()">Search</button>
+                        <button class="btn-secondary" onclick="exportCountCSV()">Export CSV</button>
                     </div>
                 </div>
+
+                <div class="stats-row" id="count-report-stats"></div>
+
+                <table class="feedback-table" id="count-report-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Breakfast</th>
+                            <th>Lunch</th>
+                            <th>Dinner</th>
+                            <th>Maximum People Fed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="count-report-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999;">Select date range to view food counts</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
-            <div class="stats-row" id="vendor-count-stats"></div>
-
-            <table class="feedback-table" id="vendor-count-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Meal</th>
-                        <th>Student Count</th>
-                        <th>Faculty Count</th>
-                        <th>Total People</th>
-                        <th>Avg Quality Rating</th>
-                        <th>Fine Imposed</th>
-                    </tr>
-                </thead>
-                <tbody id="vendor-count-body">
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #999;">Select date range to view food counts</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
         
         <!-- View Feedback Section -->
         <div id="view-feedback" class="content-section">
             <div class="content-header">
-                <h2>📝 View Student Feedback</h2>
+                <h2>📝 Student Feedback Analysis</h2>
                 <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
             </div>
             
-            <div class="date-range">
+            <div class="filter-section"> <!-- Changed from date-range to filter-section -->
                 <div class="form-group">
-                    <label for="report-mode-vendor">Report Type</label>
-                    <select id="report-mode-vendor" onchange="onVendorReportModeChange()">
+                    <label for="feedback-report-mode">Report Type</label>
+                    <select id="feedback-report-mode" onchange="onFeedbackReportModeChange()">
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
@@ -543,146 +671,224 @@
                     </select>
                 </div>
 
-                <div class="form-group" id="vendor-control-date">
-                    <label for="feedback-start-date">Select Date</label>
-                    <input type="date" id="feedback-start-date">
+                <div class="form-group" id="feedback-control-date">
+                    <label for="feedback-report-date">Select Date</label>
+                    <input type="date" id="feedback-report-date">
                 </div>
 
-                <div class="form-group" id="vendor-control-week" style="display:none;">
-                    <label for="feedback-week-date">Week Date</label>
-                    <input type="date" id="feedback-week-date">
+                <div class="form-group" id="feedback-control-week" style="display:none;">
+                    <label for="feedback-report-week">Week Date</label>
+                    <input type="date" id="feedback-report-week">
                 </div>
 
-                <div class="form-group" id="vendor-control-month" style="display:none;">
-                    <label for="feedback-month-vendor">Select Month</label>
-                    <input type="month" id="feedback-month-vendor">
+                <div class="form-group" id="feedback-control-month" style="display:none;">
+                    <label for="feedback-report-month">Select Month</label>
+                    <input type="month" id="feedback-report-month">
                 </div>
 
-                <div class="form-group" id="vendor-control-custom" style="display:none;">
+                <div class="form-group" id="feedback-control-custom" style="display:none;">
                     <label>Custom Range</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="date" id="vendor-report-start">
-                        <input type="date" id="vendor-report-end">
+                    <div class="date-range-inputs">
+                        <input type="date" id="feedback-report-start">
+                        <input type="date" id="feedback-report-end">
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; align-items: flex-end;">
-                    <button class="btn-action" onclick="generateVendorReport()">Search</button>
-                    <button class="btn-secondary" onclick="exportVendorCSV()">Export CSV</button>
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateFeedbackReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportFeedbackCSV()">Export CSV</button>
                 </div>
             </div>
             
-            <div class="stats-row" id="feedback-stats"></div>
+            <div class="stats-row" id="feedback-report-stats"></div>
             
-            <table>
+            <table class="feedback-table">
                 <thead>
                     <tr>
-                        <th>Student Name</th>
                         <th>Date</th>
-                        <th>Meal</th>
-                        <th>Overall Rating</th>
-                        <th>Taste</th>
-                        <th>Quality</th>
+                        <th>Student Name</th>
+                        <th>Roll No</th>
+                        <th>Breakfast Rating</th>
+                        <th>Lunch Rating</th>
+                        <th>Dinner Rating</th>
                         <th>Comments</th>
                     </tr>
                 </thead>
                 <tbody id="feedback-body">
                     <tr>
-                        <td colspan="7" style="text-align: center; color: #999;">No feedback available</td>
+                        <td colspan="7" style="text-align: center; color: #999;">Select date range to view feedback</td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-        
-        <!-- Give Justification Section -->
-        <div id="give-justification" class="content-section">
-            <div class="content-header">
-                <h2>💬 Give Justifications for Complaints</h2>
-                <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
-            </div>
-            
-            <div id="success-msg" class="success-msg"></div>
-            
-            <div class="form-section">
-                <h3>Select Feedback to Respond</h3>
-                <div class="form-group">
-                    <label for="complaint-date">Select Date</label>
-                    <input type="date" id="complaint-date">
+
+            <div class="chart-row" id="feedback-charts-container" style="display:none;">
+                <div class="chart-wrapper">
+                    <h4>Meal-wise Average Ratings</h4>
+                    <canvas id="mealRatingChart"></canvas>
                 </div>
-                <button class="btn-action" onclick="loadComplaintsForResponse()" style="width: 100%; margin-bottom: 20px;">Load Complaints</button>
-            </div>
-            
-            <div id="complaints-list" style="margin-bottom: 30px;"></div>
-            
-            <div class="form-section">
-                <h3>Submit Justification</h3>
-                <div class="form-group">
-                    <label for="justification-text">Your Explanation/Justification</label>
-                    <textarea id="justification-text" rows="5" placeholder="Explain the issue and how you will address it..."></textarea>
+                <div class="chart-wrapper">
+                    <h4>Rating Distribution</h4>
+                    <canvas id="ratingDistributionChart"></canvas>
                 </div>
-                <button class="btn-submit" onclick="submitJustification()">Submit Justification</button>
             </div>
         </div>
         
         <!-- View Fines Section -->
         <div id="view-fines" class="content-section">
             <div class="content-header">
-                <h2>⚖️ View Fines & Submit Responses</h2>
+                <h2>⚖️ Fines & Counter Responses</h2>
                 <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
             </div>
+
+            <div id="success-msg-fine" class="success-msg"></div>
+
+            <div class="filter-section"> <!-- New filter section for fines -->
+                <div class="form-group">
+                    <label for="vendor-fine-report-mode">Report Type</label>
+                    <select id="vendor-fine-report-mode" onchange="onVendorFineReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-date">
+                    <label for="vendor-fine-report-date">Select Date</label>
+                    <input type="date" id="vendor-fine-report-date">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-week" style="display:none;">
+                    <label for="vendor-fine-report-week">Week Date</label>
+                    <input type="date" id="vendor-fine-report-week">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-month" style="display:none;">
+                    <label for="vendor-fine-report-month">Select Month</label>
+                    <input type="month" id="vendor-fine-report-month">
+                </div>
+
+                <div class="form-group" id="vendor-fine-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="vendor-fine-report-start">
+                        <input type="date" id="vendor-fine-report-end">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="vendor-fine-response-status">Response Status</label>
+                    <select id="vendor-fine-response-status">
+                        <option value="all">All Fines</option>
+                        <option value="submitted">Response Submitted</option>
+                        <option value="not_submitted">No Response Yet</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateVendorFineReport()">Search</button>
+                    <button class="btn-secondary" onclick="exportVendorFinesCSV()">Export CSV</button>
+                </div>
+            </div>
             
-            <div id="fines-list"></div>
+            <div id="fines-list-container">
+                <p style="text-align: center; color: #999; padding: 30px;">Select filters and search for fines</p>
+            </div>
         </div>
         
         <!-- View Billing Section -->
         <div id="view-billing" class="content-section">
             <div class="content-header">
-                <h2>💰 Billing Summary</h2>
+                <h2>💰 Billing & Payment</h2>
                 <button class="close-btn" onclick="closeContent()">← Back to Dashboard</button>
             </div>
-            
-            <div class="form-section">
-                <h3>Select Month & Year</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="billing-month">Month</label>
-                        <input type="month" id="billing-month">
-                    </div>
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
-                        <button class="btn-action" onclick="loadBilling()">View Billing</button>
+
+            <div class="filter-section"> <!-- Changed from form-section to filter-section -->
+                <div class="form-group">
+                    <label for="billing-report-mode">Report Type</label>
+                    <select id="billing-report-mode" onchange="onBillingReportModeChange()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="billing-control-date">
+                    <label for="billing-report-date">Select Date</label>
+                    <input type="date" id="billing-report-date">
+                </div>
+
+                <div class="form-group" id="billing-control-week" style="display:none;">
+                    <label for="billing-report-week">Week Date</label>
+                    <input type="date" id="billing-report-week">
+                </div>
+
+                <div class="form-group" id="billing-control-month" style="display:none;">
+                    <label for="billing-report-month">Select Month</label>
+                    <input type="month" id="billing-report-month">
+                </div>
+
+                <div class="form-group" id="billing-control-custom" style="display:none;">
+                    <label>Custom Range</label>
+                    <div class="date-range-inputs">
+                        <input type="date" id="billing-report-start">
+                        <input type="date" id="billing-report-end">
                     </div>
                 </div>
+
+                <div class="filter-actions">
+                    <button class="btn-action" onclick="generateBillingReport()">Generate</button>
+                    <button class="btn-secondary" onclick="exportBillingCSV()">Export CSV</button>
+                    <button class="btn-secondary" onclick="generateBillingPDF()">Download PDF</button>
+                </div>
             </div>
-            
-            <div class="stats-row" id="billing-stats"></div>
-            
-            <div class="form-section">
-                <h3>Daily Breakdown</h3>
-                <table id="billing-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Students Fed</th>
-                            <th>Staff Fed</th>
-                            <th>Total People</th>
-                            <th>Amount (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="billing-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: #999;">Select a month to view billing</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <div id="billing-summary-container"></div>
+
+            <table class="feedback-table" id="billing-table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Breakfast Count</th>
+                        <th>Lunch Count</th>
+                        <th>Dinner Count</th>
+                        <th>Max People Fed</th>
+                        <th>Amount (₹)</th>
+                        <th>Fine (₹)</th>
+                        <th>Net Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="billing-body">
+                </tbody>
+            </table>
+
+            <div class="chart-row" id="billing-charts-container" style="display:none;">
+                <div class="chart-wrapper">
+                    <h4>Daily Billing Trend</h4>
+                    <canvas id="billingTrendChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h4>Revenue vs Fines</h4>
+                    <canvas id="revenueFinesChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
         let userData = null;
-        let selectedFeedback = null;
+        let mealRatingChartInstance = null;
+        let ratingDistributionChartInstance = null;
+        let billingTrendChartInstance = null;
+        let revenueFinesChartInstance = null;
         
-        window.addEventListener('load', () => {
+        // Global variable to store filtered data for PDF/CSV exports
+        let currentVendorFinesData = [];
+        let currentBillingData = [];
+
+
+        window.addEventListener('load', async () => {
             const user = JSON.parse(localStorage.getItem('currentUser'));
             if (!user || user.role !== 'vendor') {
                 window.location.href = 'login.html';
@@ -692,34 +898,53 @@
             userData = user;
             document.getElementById('user-name').textContent = user.name;
             document.getElementById('user-greeting').textContent = user.username;
-            document.getElementById('mess-name').textContent = {
-                'mess-001': 'Mess A (North Block)',
-                'mess-002': 'Mess B (South Block)',
-                'mess-003': 'Mess C (East Block)'
-            }[user.messId] || 'Your Mess';
+            document.getElementById('mess-name').textContent = user.messName || 'Your Mess';
             
-            // Set today's date
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('feedback-start-date').value = today;
-            document.getElementById('feedback-end-date')?.value && (document.getElementById('feedback-end-date').value = today);
-            document.getElementById('feedback-week-date').value = today;
-            document.getElementById('vendor-report-start').value = today;
-            document.getElementById('vendor-report-end').value = today;
-            document.getElementById('feedback-month-vendor').value = new Date().toISOString().slice(0,7);
-            document.getElementById('complaint-date').value = today;
-            document.getElementById('billing-month').valueAsDate = new Date();
-            
-            // Set food count defaults
-            document.getElementById('vendor-count-date').value = today;
-            document.getElementById('vendor-count-week').value = today;
-            document.getElementById('vendor-count-month').value = new Date().toISOString().slice(0,7);
-            document.getElementById('vendor-count-start').value = today;
-            document.getElementById('vendor-count-end').value = today;
-            
-            loadVendorFeedback();
-            loadVendorFines();
-            loadTodayAndNextDayCount();
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+            // Initialize Food Count report date filters
+            document.getElementById('count-report-date').value = today;
+            document.getElementById('count-report-week').value = today;
+            document.getElementById('count-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('count-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('count-report-end').value = today;
+            onCountReportModeChange(); // Ensure correct initial display
+
+            // Initialize Feedback report date filters
+            document.getElementById('feedback-report-date').value = today;
+            document.getElementById('feedback-report-week').value = today;
+            document.getElementById('feedback-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('feedback-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('feedback-report-end').value = today;
+            onFeedbackReportModeChange(); // Ensure correct initial display
+
+            // Initialize Vendor Fine report date filters
+            document.getElementById('vendor-fine-report-date').value = today;
+            document.getElementById('vendor-fine-report-week').value = today;
+            document.getElementById('vendor-fine-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('vendor-fine-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('vendor-fine-report-end').value = today;
+            document.getElementById('vendor-fine-response-status').value = 'all'; // Default to all fines
+            onVendorFineReportModeChange(); // Ensure correct initial display
+
+            // Initialize Billing report date filters
+            document.getElementById('billing-report-date').value = today;
+            document.getElementById('billing-report-week').value = today;
+            document.getElementById('billing-report-month').value = new Date().toISOString().slice(0,7);
+            document.getElementById('billing-report-start').value = getPastDate(30); // Default to last 30 days
+            document.getElementById('billing-report-end').value = today;
+            onBillingReportModeChange(); // Ensure correct initial display
+
+            await loadTodayAndTomorrowCount(); // Uses API
+            await generateVendorFineReport(getPastDate(30), today, 'all'); // Initial load for fines with default filters
         });
+
+        function getPastDate(days) {
+            const d = new Date();
+            d.setDate(d.getDate() - days);
+            return d.toISOString().split('T')[0];
+        }
         
         function showContent(section) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
@@ -730,75 +955,78 @@
         function closeContent() {
             document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
         }
-        
-        function loadVendorFeedback() {
-            const feedbacks = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            const tbody = document.getElementById('feedback-body');
-            
-            // Filter feedback for this vendor (in a real app, feedback would be linked to vendor)
-            const vendorFeedback = feedbacks.slice(0, 20);
-            
-            if (vendorFeedback.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
-                document.getElementById('feedback-stats').innerHTML = '';
-                return;
+
+        async function loadTodayAndTomorrowCount() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]; // Calculate tomorrow
+
+                // Fetch today's counts
+                const todayResponse = await fetch(`/api/food-counts?start=${today}&end=${today}`);
+                const todayCounts = await todayResponse.json();
+                const todayCountMap = todayCounts.reduce((acc, c) => { acc[c.mealType] = c.totalCount; return acc; }, {});
+
+                // Fetch tomorrow's counts
+                const tomorrowResponse = await fetch(`/api/food-counts?start=${tomorrow}&end=${tomorrow}`);
+                const tomorrowCounts = await tomorrowResponse.json();
+                const tomorrowCountMap = tomorrowCounts.reduce((acc, c) => { acc[c.mealType] = c.totalCount; return acc; }, {});
+
+                // Display today's counts
+                if (todayCounts.length > 0) {
+                    const bf = todayCountMap['breakfast'] || 0;
+                    const ln = todayCountMap['lunch'] || 0;
+                    const dn = todayCountMap['dinner'] || 0;
+                    const max = Math.max(bf, ln, dn);
+                    document.getElementById('today-content').innerHTML = `
+                        <strong>Breakfast:</strong> ${bf} | <strong>Lunch:</strong> ${ln} | <strong>Dinner:</strong> ${dn}<br>
+                        <strong style="color:#1abc9c; font-size:1.1rem;">Max People Fed: ${max}</strong>
+                    `;
+                } else {
+                    document.getElementById('today-content').innerHTML = '<span style="color:#999;">No data updated yet</span>';
+                }
+
+                // Display tomorrow's counts
+                if (tomorrowCounts.length > 0) {
+                    const bf = tomorrowCountMap['breakfast'] || 0;
+                    const ln = tomorrowCountMap['lunch'] || 0;
+                    const dn = tomorrowCountMap['dinner'] || 0;
+                    const max = Math.max(bf, ln, dn);
+                    document.getElementById('tomorrow-content').innerHTML = `
+                        <strong>Breakfast:</strong> ${bf} | <strong>Lunch:</strong> ${ln} | <strong>Dinner:</strong> ${dn}<br>
+                        <strong style="color:#1abc9c; font-size:1.1rem;">Max People Fed: ${max}</strong>
+                    `;
+                } else {
+                    document.getElementById('tomorrow-content').innerHTML = '<span style="color:#999;">No data updated yet</span>';
+                }
+            } catch (error) {
+                console.error('Error loading today and tomorrow counts:', error);
+                document.getElementById('today-content').innerHTML = '<span style="color:#dc3545;">Error loading data.</span>';
+                document.getElementById('tomorrow-content').innerHTML = '<span style="color:#dc3545;">Error loading data.</span>';
             }
-            
-            const avgRating = (vendorFeedback.reduce((sum, f) => sum + f.overallRating, 0) / vendorFeedback.length).toFixed(1);
-            const stats = `
-                <div class="stat-box">
-                    <div class="label">Total Feedbacks</div>
-                    <div class="value">${vendorFeedback.length}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Average Rating</div>
-                    <div class="value">${avgRating}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Low Ratings (<3)</div>
-                    <div class="value">${vendorFeedback.filter(f => f.overallRating < 3).length}</div>
-                </div>
-            `;
-            document.getElementById('feedback-stats').innerHTML = stats;
-            
-            tbody.innerHTML = vendorFeedback.map(f => `
-                <tr>
-                    <td>${f.studentName}</td>
-                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
-                    <td style="text-transform: capitalize;">${f.mealType}</td>
-                    <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
-                    <td>${f.ratings?.taste || '-'}/5</td>
-                    <td>${f.ratings?.quality || '-'}/5</td>
-                    <td>${f.comments || '-'}</td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterVendorFeedback() {
-            loadVendorFeedback();
         }
 
-        function onVendorReportModeChange() {
-            const mode = document.getElementById('report-mode-vendor').value;
-            document.getElementById('vendor-control-date').style.display = mode === 'daily' ? '' : 'none';
-            document.getElementById('vendor-control-week').style.display = mode === 'weekly' ? '' : 'none';
-            document.getElementById('vendor-control-month').style.display = mode === 'monthly' ? '' : 'none';
-            document.getElementById('vendor-control-custom').style.display = mode === 'custom' ? '' : 'none';
+        function onCountReportModeChange() {
+            const mode = document.getElementById('count-report-mode').value;
+            document.getElementById('count-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('count-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('count-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('count-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
         }
 
-        async function generateVendorReport() {
-            const mode = document.getElementById('report-mode-vendor').value;
+        async function generateCountReport() {
+            const mode = document.getElementById('count-report-mode').value;
             let start = null, end = null;
+            
             if (mode === 'daily') {
-                const d = document.getElementById('feedback-start-date').value;
+                const d = document.getElementById('count-report-date').value;
                 if (!d) { alert('Select a date'); return; }
                 start = end = d;
             } else if (mode === 'weekly') {
-                const d = document.getElementById('feedback-week-date').value;
+                const d = document.getElementById('count-report-week').value;
                 if (!d) { alert('Select a week date'); return; }
                 const dt = new Date(d);
                 const day = dt.getDay();
-                const diffToMonday = (day + 6) % 7;
+                const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
                 const monday = new Date(dt);
                 monday.setDate(dt.getDate() - diffToMonday);
                 const sunday = new Date(monday);
@@ -806,413 +1034,814 @@
                 start = monday.toISOString().slice(0,10);
                 end = sunday.toISOString().slice(0,10);
             } else if (mode === 'monthly') {
-                const m = document.getElementById('feedback-month-vendor').value; // YYYY-MM
+                const m = document.getElementById('count-report-month').value;
                 if (!m) { alert('Select a month'); return; }
                 start = m + '-01';
                 const [yy, mm] = m.split('-').map(x => parseInt(x,10));
                 const lastDay = new Date(yy, mm, 0).getDate();
                 end = `${m}-${String(lastDay).padStart(2,'0')}`;
             } else if (mode === 'custom') {
-                const s = document.getElementById('vendor-report-start').value;
-                const e = document.getElementById('vendor-report-end').value;
+                const s = document.getElementById('count-report-start').value;
+                const e = document.getElementById('count-report-end').value;
                 if (!s || !e) { alert('Select start and end date'); return; }
                 if (s > e) { alert('Start date must be <= end date'); return; }
                 start = s; end = e;
             }
 
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('count-report-start').value = start;
+            document.getElementById('count-report-end').value = end;
+
+            const tbody = document.getElementById('count-report-body');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Loading food count report...</td></tr>';
+            document.getElementById('count-report-stats').innerHTML = '';
+
             try {
-                const url = `/api/feedback?start=${start}&end=${end}`;
-                const resp = await fetch(url);
-                if (resp.ok) {
-                    const filtered = await resp.json();
-                    if (!filtered || filtered.length === 0) {
-                        document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
-                        document.getElementById('feedback-stats').innerHTML = '';
-                        return;
+                const response = await fetch(`/api/food-counts?start=${start}&end=${end}`);
+                const foodCounts = await response.json();
+                
+                // Aggregate by date to combine meal data into single rows
+                const dailyAggregates = {};
+                foodCounts.forEach(c => {
+                    if (!dailyAggregates[c.date]) {
+                        dailyAggregates[c.date] = { date: c.date, breakfast: 0, lunch: 0, dinner: 0, maxPeople: 0 };
                     }
+                    if (c.mealType === 'breakfast') dailyAggregates[c.date].breakfast = c.totalCount;
+                    if (c.mealType === 'lunch') dailyAggregates[c.date].lunch = c.totalCount;
+                    if (c.mealType === 'dinner') dailyAggregates[c.date].dinner = c.totalCount;
+                });
+                
+                const transformedData = Object.values(dailyAggregates).map(data => {
+                    data.maxPeople = Math.max(data.breakfast, data.lunch, data.dinner);
+                    return data;
+                }).sort((a,b) => new Date(a.date) - new Date(b.date));
 
-                    const avgRating = (filtered.reduce((sum, f) => sum + f.overallRating, 0) / filtered.length).toFixed(1);
-                    const stats = `
-                        <div class="stat-box">
-                            <div class="label">Total Feedbacks</div>
-                            <div class="value">${filtered.length}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="label">Average Rating</div>
-                            <div class="value">${avgRating}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="label">Low Ratings (&lt;3)</div>
-                            <div class="value">${filtered.filter(f => f.overallRating < 3).length}</div>
-                        </div>
-                    `;
-                    document.getElementById('feedback-stats').innerHTML = stats;
 
-                    document.getElementById('feedback-body').innerHTML = filtered.map(f => `
-                        <tr>
-                            <td>${f.studentName}</td>
-                            <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
-                            <td style="text-transform: capitalize;">${f.mealType}</td>
-                            <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
-                            <td>${f.taste || '-'}/5</td>
-                            <td>${f.quality || '-'}/5</td>
-                            <td>${f.comments || '-'}</td>
-                        </tr>
-                    `).join('');
-
-                    window.__vendorFilteredFeedback = filtered;
-                    return;
-                }
-            } catch (e) {
-                console.warn('API fetch failed, falling back to local data', e);
+                window.__filteredCountData = transformedData;
+                renderCountReport(transformedData);
+            } catch (error) {
+                console.error('Error generating count report:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Error loading count report.</td></tr>';
+                document.getElementById('count-report-stats').innerHTML = '';
             }
-
-            // Fallback to localStorage
-            const data = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            let filtered = data.filter(f => f.date >= start && f.date <= end);
-            document.getElementById('feedback-body').innerHTML = filtered.length ? filtered.map(f => `
-                <tr>
-                    <td>${f.studentName}</td>
-                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
-                    <td style="text-transform: capitalize;">${f.mealType}</td>
-                    <td><span class="badge ${f.overallRating >= 4 ? 'success' : f.overallRating >= 3 ? 'warning' : 'danger'}">${f.overallRating}/5</span></td>
-                    <td>${f.ratings?.taste || '-'}/5</td>
-                    <td>${f.ratings?.quality || '-'}/5</td>
-                    <td>${f.comments || '-'}</td>
-                </tr>
-            `).join('') : '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
-            document.getElementById('feedback-stats').innerHTML = '';
-            window.__vendorFilteredFeedback = filtered;
         }
 
-        function exportVendorCSV() {
-            const arr = (window.__vendorFilteredFeedback && window.__vendorFilteredFeedback.length) ? window.__vendorFilteredFeedback : JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            if (!arr || arr.length === 0) { alert('No data to export'); return; }
-            const headers = ['studentName','date','mealType','overallRating','taste','quality','comments'];
-            const csv = [headers.join(',')].concat(arr.map(r => headers.map(h => {
-                let v = r[h] === undefined ? '' : r[h];
-                if (typeof v === 'string') v = v.replace(/"/g, '""');
-                return '"' + String(v) + '"';
-            }).join(','))).join('\n');
+        function renderCountReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('count-report-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data available</td></tr>';
+                document.getElementById('count-report-stats').innerHTML = '';
+                return;
+            }
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `vendor_feedback_report_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        }
-        
-        function loadComplaintsForResponse() {
-            const feedbacks = JSON.parse(localStorage.getItem('feedbackData') || '[]');
-            const selectedDate = document.getElementById('complaint-date').value;
-            
-            const complaints = feedbacks.filter(f => f.date === selectedDate && f.overallRating < 3);
-            const list = document.getElementById('complaints-list');
-            
-            if (complaints.length === 0) {
-                list.innerHTML = '<p style="color: #999; text-align: center;">No complaints for this date</p>';
-                return;
-            }
-            
-            list.innerHTML = '<h3 style="margin-bottom: 15px;">Low Rating Feedbacks</h3>' + 
-                complaints.map((f, idx) => `
-                <div style="background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid #ffcc00;" onclick="selectComplaint(${idx})">
-                    <strong>${f.studentName}</strong> - Rating: <span class="badge warning">${f.overallRating}/5</span><br>
-                    <small style="color: #666;">${f.mealType} | ${f.comments}</small>
-                </div>
-            `).join('');
-        }
-        
-        function selectComplaint(index) {
-            alert('Justification selected for complaint ' + (index + 1));
-        }
-        
-        function submitJustification() {
-            const text = document.getElementById('justification-text').value;
-            if (!text) {
-                alert('Please enter your justification');
-                return;
-            }
-            
-            const justification = {
-                id: Date.now().toString(),
-                vendorId: userData.messId,
-                text: text,
-                timestamp: new Date().toISOString(),
-                status: 'Submitted'
-            };
-            
-            let justifications = JSON.parse(localStorage.getItem('vendorJustifications') || '[]');
-            justifications.unshift(justification);
-            localStorage.setItem('vendorJustifications', JSON.stringify(justifications));
-            
-            const msg = document.getElementById('success-msg');
-            msg.textContent = '✓ Justification submitted successfully!';
-            msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 3000);
-            
-            document.getElementById('justification-text').value = '';
-        }
-        
-        function loadVendorFines() {
-            const fines = JSON.parse(localStorage.getItem('fines') || '[]');
-            const list = document.getElementById('fines-list');
-            
-            if (fines.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">No fines imposed on your mess</p>';
-                return;
-            }
-            
-            list.innerHTML = fines.map(fine => `
-                <div class="fine-card">
-                    <h4>Fine Imposed on ${new Date(fine.date).toLocaleDateString('en-IN')}</h4>
-                    <p><strong>Reason:</strong> ${fine.reason.replace('-', ' ')}</p>
-                    <p><strong>Amount:</strong> ₹${fine.amount}</p>
-                    <p><strong>Meal Affected:</strong> ${fine.meal}</p>
-                    <p><strong>Remarks:</strong> ${fine.remarks}</p>
-                    <div style="margin-top: 12px;">
-                        <textarea placeholder="Submit your justification for this fine..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" rows="3"></textarea>
-                        <button class="btn-submit" style="margin-top: 10px;" onclick="submitFineJustification(this)">Submit Response</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function submitFineJustification(btn) {
-            const textarea = btn.parentElement.querySelector('textarea');
-            if (!textarea.value) {
-                alert('Please enter your response');
-                return;
-            }
-            
-            alert('Your response has been submitted successfully!');
-            textarea.value = '';
-            btn.textContent = '✓ Submitted';
-            btn.disabled = true;
-        }
-        
-        function loadBilling() {
-            const month = document.getElementById('billing-month').value;
-            const counts = JSON.parse(localStorage.getItem('foodCounts') || '[]');
-            
-            if (!month) {
-                alert('Please select a month');
-                return;
-            }
-            
-            const monthCounts = counts.filter(c => c.date.startsWith(month));
-            
-            if (monthCounts.length === 0) {
-                document.getElementById('billing-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No billing data available for this month</td></tr>';
-                document.getElementById('billing-stats').innerHTML = '';
-                return;
-            }
-            
-            let totalStudents = 0, totalFaculty = 0, totalAmount = 0;
-            
-            monthCounts.forEach(count => {
-                const s = count.students.breakfast + count.students.lunch + count.students.dinner;
-                const f = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
-                totalStudents += s;
-                totalFaculty += f;
-                totalAmount += (s * 50) + (f * 60); // Example rates
+            let totalBreakfast = 0, totalLunch = 0, totalDinner = 0;
+            data.forEach(r => {
+                totalBreakfast += r.breakfast || 0;
+                totalLunch += r.lunch || 0;
+                totalDinner += r.dinner || 0;
             });
+
+            const avgBreakfast = data.length > 0 ? (totalBreakfast / data.length).toFixed(0) : 0;
+            const avgLunch = data.length > 0 ? (totalLunch / data.length).toFixed(0) : 0;
+            const avgDinner = data.length > 0 ? (totalDinner / data.length).toFixed(0) : 0;
+
+            const stats = `
+                <div class="stat-box">
+                    <div class="label">Total Records</div>
+                    <div class="value">${data.length}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Breakfast</div>
+                    <div class="value">${avgBreakfast}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Lunch</div>
+                    <div class="value">${avgLunch}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg Dinner</div>
+                    <div class="value">${avgDinner}</div>
+                </div>
+            `;
+            document.getElementById('count-report-stats').innerHTML = stats;
+
+            document.getElementById('count-report-body').innerHTML = data.map(r => `
+                <tr>
+                    <td>${new Date(r.date).toLocaleDateString('en-IN')}</td>
+                    <td>${r.breakfast}</td>
+                    <td>${r.lunch}</td>
+                    <td>${r.dinner}</td>
+                    <td><strong>${r.maxPeople}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        async function exportCountCSV() {
+            const currentStart = document.getElementById('count-report-start').value;
+            const currentEnd = document.getElementById('count-report-end').value;
+            window.location.href = `/api/food-counts/csv?start=${currentStart}&end=${currentEnd}`;
+        }
+
+        function onFeedbackReportModeChange() {
+            const mode = document.getElementById('feedback-report-mode').value;
+            document.getElementById('feedback-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('feedback-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('feedback-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('feedback-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
+
+        async function generateFeedbackReport() {
+            const mode = document.getElementById('feedback-report-mode').value;
+            let start = null, end = null;
+            
+            if (mode === 'daily') {
+                const d = document.getElementById('feedback-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('feedback-report-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('feedback-report-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('feedback-report-start').value;
+                const e = document.getElementById('feedback-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
+            }
+
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('feedback-report-start').value = start;
+            document.getElementById('feedback-report-end').value = end;
+
+            const tbody = document.getElementById('feedback-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Loading feedback...</td></tr>';
+            document.getElementById('feedback-report-stats').innerHTML = '';
+            document.getElementById('feedback-charts-container').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/feedback?start=${start}&end=${end}`);
+                const filtered = await response.json();
+                
+                window.__filteredFeedbackData = filtered;
+                renderFeedbackReport(filtered);
+            } catch (error) {
+                console.error('Error generating feedback report:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #dc3545;">Error loading feedback report.</td></tr>';
+                document.getElementById('feedback-report-stats').innerHTML = '';
+                document.getElementById('feedback-charts-container').style.display = 'none';
+            }
+        }
+
+        function renderFeedbackReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('feedback-body').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No feedback available</td></tr>';
+                document.getElementById('feedback-report-stats').innerHTML = '';
+                document.getElementById('feedback-charts-container').style.display = 'none';
+                return;
+            }
+
+            let breakfastRatings = data.filter(f => f.breakfastRating).map(f => f.breakfastRating);
+            let lunchRatings = data.filter(f => f.lunchRating).map(f => f.lunchRating);
+            let dinnerRatings = data.filter(f => f.dinnerRating).map(f => f.dinnerRating);
+            
+            const avgBreakfast = breakfastRatings.length > 0 ? (breakfastRatings.reduce((a, b) => a + b, 0) / breakfastRatings.length).toFixed(1) : 0;
+            const avgLunch = lunchRatings.length > 0 ? (lunchRatings.reduce((a, b) => a + b, 0) / lunchRatings.length).toFixed(1) : 0;
+            const avgDinner = dinnerRatings.length > 0 ? (dinnerRatings.reduce((a, b) => a + b, 0) / dinnerRatings.length).toFixed(1) : 0;
             
             const stats = `
                 <div class="stat-box">
-                    <div class="label">Total Students Fed</div>
-                    <div class="value">${totalStudents}</div>
+                    <div class="label">Total Feedbacks</div>
+                    <div class="value">${data.length}</div>
                 </div>
                 <div class="stat-box">
-                    <div class="label">Total Staff Fed</div>
-                    <div class="value">${totalFaculty}</div>
+                    <div class="label">Avg. Breakfast Rating</div>
+                    <div class="value">${avgBreakfast}/5</div>
                 </div>
                 <div class="stat-box">
-                    <div class="label">Total Amount (₹)</div>
-                    <div class="value">₹${totalAmount.toLocaleString('en-IN')}</div>
+                    <div class="label">Avg. Lunch Rating</div>
+                    <div class="value">${avgLunch}/5</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Avg. Dinner Rating</div>
+                    <div class="value">${avgDinner}/5</div>
                 </div>
             `;
-            document.getElementById('billing-stats').innerHTML = stats;
+            document.getElementById('feedback-report-stats').innerHTML = stats;
+
+            document.getElementById('feedback-body').innerHTML = data.map(f => `
+                <tr>
+                    <td>${new Date(f.date).toLocaleDateString('en-IN')}</td>
+                    <td>${f.studentName || '-'}</td>
+                    <td>${f.rollNumber || '-'}</td>
+                    <td><span class="rating-badge">${f.breakfastRating || '-'}/5</span></td>
+                    <td><span class="rating-badge">${f.lunchRating || '-'}/5</span></td>
+                    <td><span class="rating-badge">${f.dinnerRating || '-'}/5</span></td>
+                    <td>${f.comments || '-'}</td>
+                </tr>
+            `).join('');
+
+            renderFeedbackCharts(data);
+        }
+
+        function renderFeedbackCharts(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('feedback-charts-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('feedback-charts-container').style.display = 'grid';
+
+            let breakfastRatings = data.filter(f => f.breakfastRating).map(f => f.breakfastRating);
+            let lunchRatings = data.filter(f => f.lunchRating).map(f => f.lunchRating);
+            let dinnerRatings = data.filter(f => f.dinnerRating).map(f => f.dinnerRating);
             
-            const tbody = document.getElementById('billing-body');
-            tbody.innerHTML = monthCounts.map(count => {
-                const s = count.students.breakfast + count.students.lunch + count.students.dinner;
-                const f = count.faculty.breakfast + count.faculty.lunch + count.faculty.dinner;
-                const amount = (s * 50) + (f * 60);
+            const avgBreakfast = breakfastRatings.length > 0 ? (breakfastRatings.reduce((a, b) => a + b, 0) / breakfastRatings.length) : 0;
+            const avgLunch = lunchRatings.length > 0 ? (lunchRatings.reduce((a, b) => a + b, 0) / lunchRatings.length) : 0;
+            const avgDinner = dinnerRatings.length > 0 ? (dinnerRatings.reduce((a, b) => a + b, 0) / dinnerRatings.length) : 0;
+
+            const mealCtx = document.getElementById('mealRatingChart').getContext('2d');
+            if (mealRatingChartInstance) mealRatingChartInstance.destroy();
+            mealRatingChartInstance = new Chart(mealCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Breakfast', 'Lunch', 'Dinner'],
+                    datasets: [{
+                        label: 'Average Rating (out of 5)',
+                        data: [avgBreakfast.toFixed(2), avgLunch.toFixed(2), avgDinner.toFixed(2)],
+                        backgroundColor: ['#1abc9c', '#16a085', '#f093fb'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: { y: { beginAtZero: true, max: 5 } }
+                }
+            });
+
+            const allRatings = [...breakfastRatings, ...lunchRatings, ...dinnerRatings];
+            const ratingCounts = {
+                '5': allRatings.filter(r => r === 5).length,
+                '4': allRatings.filter(r => r === 4).length,
+                '3': allRatings.filter(r => r === 3).length,
+                '2': allRatings.filter(r => r === 2).length,
+                '1': allRatings.filter(r => r === 1).length,
+            };
+
+            const ratingCtx = document.getElementById('ratingDistributionChart').getContext('2d');
+            if (ratingDistributionChartInstance) ratingDistributionChartInstance.destroy();
+            ratingDistributionChartInstance = new Chart(ratingCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+                    datasets: [{
+                        data: [ratingCounts['5'], ratingCounts['4'], ratingCounts['3'], ratingCounts['2'], ratingCounts['1']],
+                        backgroundColor: ['#28a745', '#20c997', '#ffc107', '#fd7e14', '#dc3545'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: 'right' } }
+                }
+            });
+        }
+
+        async function exportFeedbackCSV() {
+            const currentStart = document.getElementById('feedback-report-start').value;
+            const currentEnd = document.getElementById('feedback-report-end').value;
+            window.location.href = `/api/feedback/csv?start=${currentStart}&end=${currentEnd}`;
+        }
+
+        // ===== VENDOR FINES FUNCTIONS =====
+
+        function onVendorFineReportModeChange() {
+            const mode = document.getElementById('vendor-fine-report-mode').value;
+            document.getElementById('vendor-fine-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('vendor-fine-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
+
+        async function generateVendorFineReport(initialStart = null, initialEnd = null, initialStatus = 'all') {
+            const mode = document.getElementById('vendor-fine-report-mode').value;
+            const responseStatus = document.getElementById('vendor-fine-response-status').value;
+            let start = initialStart, end = initialEnd;
+
+            if (!initialStart || !initialEnd) { // Only calculate dates if not provided by initial call
+                if (mode === 'daily') {
+                    const d = document.getElementById('vendor-fine-report-date').value;
+                    if (!d) { alert('Select a date'); return; }
+                    start = end = d;
+                } else if (mode === 'weekly') {
+                    const d = document.getElementById('vendor-fine-report-week').value;
+                    if (!d) { alert('Select a week date'); return; }
+                    const dt = new Date(d);
+                    const day = dt.getDay();
+                    const diffToMonday = (day === 0) ? 6 : day - 1; // Calculate days to subtract to get to Monday
+                    const monday = new Date(dt);
+                    monday.setDate(dt.getDate() - diffToMonday);
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    start = monday.toISOString().slice(0,10);
+                    end = sunday.toISOString().slice(0,10);
+                } else if (mode === 'monthly') {
+                    const m = document.getElementById('vendor-fine-report-month').value;
+                    if (!m) { alert('Select a month'); return; }
+                    start = m + '-01';
+                    const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                    const lastDay = new Date(yy, mm, 0).getDate();
+                    end = `${m}-${String(lastDay).padStart(2,'0')}`;
+                } else if (mode === 'custom') {
+                    const s = document.getElementById('vendor-fine-report-start').value;
+                    const e = document.getElementById('vendor-fine-report-end').value;
+                    if (!s || !e) { alert('Select start and end date'); return; }
+                    if (s > e) { alert('Start date must be <= end date'); return; }
+                    start = s; end = e;
+                }
+            }
+
+            // Set the inputs for CSV export
+            document.getElementById('vendor-fine-report-start').value = start;
+            document.getElementById('vendor-fine-report-end').value = end;
+            document.getElementById('vendor-fine-response-status').value = responseStatus; // Ensure this is set for export to use
+
+            const container = document.getElementById('fines-list-container');
+            container.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">Loading fines...</p>';
+
+            try {
+                const finesResponse = await fetch(`/api/fines?start=${start}&end=${end}&response_status=${responseStatus}`);
+                if (!finesResponse.ok) {
+                    const errorText = await finesResponse.text();
+                    throw new Error(`HTTP error! status: ${finesResponse.status} - ${errorText}`);
+                }
+                const fines = await finesResponse.json();
+                
+                currentVendorFinesData = fines; // Store for CSV export
+
+                if (fines.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">No fines found for the selected criteria.</p>';
+                    return;
+                }
+
+                renderVendorFines(fines);
+
+            } catch (error) {
+                console.error('Error generating vendor fine report:', error);
+                container.innerHTML = `<p style="text-align: center; color: #dc3545; padding: 30px;">Error loading fines: ${error.message}</p>`;
+            }
+        }
+
+        function renderVendorFines(fines) {
+            const container = document.getElementById('fines-list-container');
+            container.innerHTML = fines.map((fine) => {
+                const responseText = fine.vendorResponse || '';
+                const isDisabled = fine.responseStatus === 'Submitted' ? 'disabled' : '';
+                const buttonText = fine.responseStatus === 'Submitted' ? 'Response Submitted' : 'Submit Response';
+
                 return `
-                    <tr>
-                        <td>${new Date(count.date).toLocaleDateString('en-IN')}</td>
-                        <td>${s}</td>
-                        <td>${f}</td>
-                        <td>${s + f}</td>
-                        <td>₹${amount}</td>
-                    </tr>
+                    <div class="fine-response-box">
+                        <h4>⚖️ Fine Imposed on ${new Date(fine.date).toLocaleDateString('en-IN')}</h4>
+                        <div class="details">
+                            <div class="fine-detail">
+                                <label>Meal</label>
+                                <span class="value" style="text-transform: capitalize;">${fine.meal}</span>
+                            </div>
+                            <div class="fine-detail">
+                                <label>Reason</label>
+                                <span class="value">${fine.reason.replace(/-/g, ' ')}</span>
+                            </div>
+                            <div class="fine-detail">
+                                <label>Amount</label>
+                                <span class="value" style="color: #dc3545; font-weight: 700;">₹${fine.amount}</span>
+                            </div>
+                        </div>
+                        <div style="margin: 15px 0;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Your Counter Response</label>
+                            <textarea id="response-${fine.id}" placeholder="Provide your justification or counter-feedback..." style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem;" rows="3" ${isDisabled}>${responseText}</textarea>
+                        </div>
+                        <button class="btn-submit" onclick="submitVendorFineResponse(${fine.id})" ${isDisabled}>${buttonText}</button>
+                    </div>
                 `;
             }).join('');
+        }
+
+        async function submitVendorFineResponse(fineId) {
+            const textarea = document.getElementById(`response-${fineId}`);
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                alert('Please enter your response');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/vendor-responses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fine_id: fineId,
+                        vendor_response: text,
+                        status: 'Submitted'
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to submit response');
+                }
+
+                const msg = document.getElementById('success-msg-fine');
+                if (msg) {
+                    msg.textContent = '✓ Your response has been submitted successfully!';
+                    msg.style.display = 'block';
+                    setTimeout(() => { if (msg) msg.style.display = 'none'; }, 3000);
+                }
+
+                // Disable textarea and update button immediately upon success
+                textarea.disabled = true;
+                // Find button within the same fine box to avoid query misses
+                const fineBox = textarea.closest('.fine-response-box');
+                let btn = null;
+                if (fineBox) btn = fineBox.querySelector('.btn-submit');
+                // Fallback: try to find by onclick attribute if structure differs
+                if (!btn) btn = document.querySelector(`button[onclick="submitVendorFineResponse(${fineId})"]`);
+                if (btn) {
+                    btn.textContent = '✓ Response Submitted';
+                    btn.disabled = true;
+                }
+
+                // Optionally, refresh the list to reflect the change if the status filter is 'all' or 'submitted'
+                generateVendorFineReport(
+                    document.getElementById('vendor-fine-report-start').value,
+                    document.getElementById('vendor-fine-report-end').value,
+                    document.getElementById('vendor-fine-response-status').value
+                );
+
+            } catch (error) {
+                console.error('Error submitting vendor response:', error);
+                alert('Error submitting response: ' + error.message);
+            }
+        }
+
+        async function exportVendorFinesCSV() {
+            const currentStart = document.getElementById('vendor-fine-report-start').value;
+            const currentEnd = document.getElementById('vendor-fine-report-end').value;
+            const responseStatus = document.getElementById('vendor-fine-response-status').value;
+            window.location.href = `/api/fines/csv?start=${currentStart}&end=${currentEnd}&response_status=${responseStatus}`;
+        }
+
+        // ===== BILLING FUNCTIONS (Reused from admin.html) =====
+
+        function onBillingReportModeChange() {
+            const mode = document.getElementById('billing-report-mode').value;
+            document.getElementById('billing-control-date').style.display = mode === 'daily' ? 'flex' : 'none';
+            document.getElementById('billing-control-week').style.display = mode === 'weekly' ? 'flex' : 'none';
+            document.getElementById('billing-control-month').style.display = mode === 'monthly' ? 'flex' : 'none';
+            document.getElementById('billing-control-custom').style.display = mode === 'custom' ? 'flex' : 'none';
+        }
+
+        async function generateBillingReport() {
+            const mode = document.getElementById('billing-report-mode').value;
+            let start = null, end = null;
+            
+            if (mode === 'daily') {
+                const d = document.getElementById('billing-report-date').value;
+                if (!d) { alert('Select a date'); return; }
+                start = end = d;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('billing-report-week').value;
+                if (!d) { alert('Select a week date'); return; }
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                const m = document.getElementById('billing-report-month').value;
+                if (!m) { alert('Select a month'); return; }
+                start = m + '-01';
+                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
+                const lastDay = new Date(yy, mm, 0).getDate();
+                end = `${m}-${String(lastDay).padStart(2,'0')}`;
+            } else if (mode === 'custom') {
+                const s = document.getElementById('billing-report-start').value;
+                const e = document.getElementById('billing-report-end').value;
+                if (!s || !e) { alert('Select start and end date'); return; }
+                if (s > e) { alert('Start date must be <= end date'); return; }
+                start = s; end = e;
+            }
+
+            // Set values for hidden inputs used by CSV export
+            document.getElementById('billing-report-start').value = start;
+            document.getElementById('billing-report-end').value = end;
+
+            document.getElementById('billing-summary-container').innerHTML = '<p style="text-align: center; color: #999;">Loading billing data...</p>';
+            document.getElementById('billing-table').style.display = 'none';
+            document.getElementById('billing-charts-container').style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/billing?start=${start}&end=${end}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+                const billingData = await response.json();
+
+                currentBillingData = billingData; // Store for PDF/CSV export
+                renderBillingReport(billingData);
+            } catch (error) {
+                console.error('Error generating billing report:', error);
+                document.getElementById('billing-summary-container').innerHTML = `<p style="text-align: center; color: #dc3545;">Error loading billing data: ${error.message}</p>`;
+                document.getElementById('billing-table').style.display = 'none';
+                document.getElementById('billing-charts-container').style.display = 'none';
+            }
+        }
+
+        function renderBillingReport(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('billing-table').style.display = 'none';
+                document.getElementById('billing-summary-container').innerHTML = '<p style="text-align: center; color: #999;">No billing data available</p>';
+                document.getElementById('billing-charts-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('billing-table').style.display = 'table';
+
+            let totalGrossAmount = 0, totalFines = 0, totalNetAmount = 0;
+            data.forEach(d => {
+                totalGrossAmount += (d.grossAmount || 0);
+                totalFines += (d.fineAmount || 0);
+                totalNetAmount += (d.netAmount || 0);
+            });
+
+            const totalPeopleFed = data.reduce((sum, d) => sum + (d.maxPeopleFed || 0), 0);
+
+            const summaryHTML = `
+                <div class="billing-summary">
+                    <h4>Billing Summary</h4>
+                    <div class="billing-grid">
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total People Fed</div>
+                            <div class="billing-item-value">${totalPeopleFed}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total Gross Amount (₹)</div>
+                            <div class="billing-item-value">₹${totalGrossAmount.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Total Fines (₹)</div>
+                            <div class="billing-item-value" style="color: #dc3545;">-₹${totalFines.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="billing-item">
+                            <div class="billing-item-label">Net Amount (₹)</div>
+                            <div class="billing-item-value" style="color: #28a745; font-size: 1.6rem;">₹${totalNetAmount.toLocaleString('en-IN')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('billing-summary-container').innerHTML = summaryHTML;
+
+            document.getElementById('billing-body').innerHTML = data.map(d => `
+                <tr>
+                    <td>${new Date(d.date).toLocaleDateString('en-IN')}</td>
+                    <td>${d.breakfastCount || 0}</td>
+                    <td>${d.lunchCount || 0}</td>
+                    <td>${d.dinnerCount || 0}</td>
+                    <td><strong>${d.maxPeopleFed || 0}</strong></td>
+                    <td>₹${(d.grossAmount || 0).toLocaleString('en-IN')}</td>
+                    <td>${(d.fineAmount || 0) > 0 ? `₹${(d.fineAmount || 0).toLocaleString('en-IN')}` : '-'}</td>
+                    <td style="font-weight: 600; ${(d.netAmount || 0) < 0 ? 'color: #dc3545;' : 'color: #28a745;'}">₹${(d.netAmount || 0).toLocaleString('en-IN')}</td>
+                </tr>
+            `).join('');
+
+            renderBillingCharts(data);
+        }
+
+        function renderBillingCharts(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('billing-charts-container').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('billing-charts-container').style.display = 'grid';
+
+            const dates = data.map(d => new Date(d.date).toLocaleDateString('en-IN'));
+            const grossAmounts = data.map(d => (d.grossAmount || 0));
+            const fineAmounts = data.map(d => (d.fineAmount || 0));
+
+            const trendCtx = document.getElementById('billingTrendChart').getContext('2d');
+            if (billingTrendChartInstance) billingTrendChartInstance.destroy();
+            billingTrendChartInstance = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Gross Amount (₹)',
+                        data: grossAmounts,
+                        borderColor: '#1abc9c',
+                        backgroundColor: 'rgba(26, 188, 156, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#666' } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666' } },
+                        x: { grid: { color: '#eee' }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+
+            const revenueCtx = document.getElementById('revenueFinesChart').getContext('2d');
+            if (revenueFinesChartInstance) revenueFinesChartInstance.destroy();
+            revenueFinesChartInstance = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Gross Revenue (₹)',
+                        data: grossAmounts,
+                        backgroundColor: '#28a745'
+                    }, {
+                        label: 'Fines (₹)',
+                        data: fineAmounts,
+                        backgroundColor: '#dc3545'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#666' } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666' } },
+                        x: { grid: { color: '#eee' }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+        }
+
+        async function exportBillingCSV() {
+            const currentStart = document.getElementById('billing-report-start').value;
+            const currentEnd = document.getElementById('billing-report-end').value;
+            window.location.href = `/api/billing/csv?start=${currentStart}&end=${currentEnd}`;
+        }
+
+        function generateBillingPDF() {
+            const data = currentBillingData;
+            if (!data || data.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let totalGrossAmount = 0,
+                totalFineAmount = 0,
+                totalNetAmount = 0;
+            data.forEach(d => {
+                totalGrossAmount += (d.grossAmount || 0);
+                totalFineAmount += (d.fineAmount || 0);
+                totalNetAmount += (d.netAmount || 0);
+            });
+            const totalPeopleFed = data.reduce((sum, d) => sum + (d.maxPeopleFed || 0), 0);
+
+            const mode = document.getElementById('billing-report-mode').value;
+            let start = null,
+                end = null;
+            if (mode === 'daily') {
+                start = end = document.getElementById('billing-report-date').value;
+            } else if (mode === 'weekly') {
+                const d = document.getElementById('billing-report-week').value;
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diffToMonday = (day === 0) ? 6 : day - 1;
+                const monday = new Date(dt);
+                monday.setDate(dt.getDate() - diffToMonday);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                start = monday.toISOString().slice(0,10);
+                end = sunday.toISOString().slice(0,10);
+            } else if (mode === 'monthly') {
+                start = document.getElementById('billing-report-month').value + '-01';
+                end = new Date(new Date(start).getFullYear(), new Date(start).getMonth() + 1, 0).toISOString().split('T')[0];
+            } else if (mode === 'custom') {
+                start = document.getElementById('billing-report-start').value;
+                end = document.getElementById('billing-report-end').value;
+            }
+
+            const content = `
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #1abc9c; text-align: center; }
+                        .summary { background: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 5px; }
+                        .summary-item { display: inline-block; width: 23%; margin: 10px 1%; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th { background: #1abc9c; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        tr:hover { background: #f9f9f9; }
+                        .total-row { font-weight: bold; background: #e8f5e9; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Billing Summary Report</h1>
+                    <p><strong>Generated on:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
+                    <p><strong>Report Period:</strong> ${new Date(start).toLocaleDateString('en-IN')} to ${new Date(end).toLocaleDateString('en-IN')}</p>
+                    
+                    <div class="summary">
+                        <div class="summary-item">
+                            <strong>Total People Fed:</strong><br> ${totalPeopleFed}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Total Gross Amount:</strong><br> ₹${totalGrossAmount.toLocaleString('en-IN')}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Total Fines:</strong><br> ₹${totalFineAmount.toLocaleString('en-IN')}
+                        </div>
+                        <div class="summary-item">
+                            <strong>Net Amount:</strong><br> <span style="color: #28a745; font-size: 1.2rem;">₹${totalNetAmount.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Breakfast</th>
+                                <th>Lunch</th>
+                                <th>Dinner</th>
+                                <th>Max People</th>
+                                <th>Gross Amount (₹)</th>
+                                <th>Fine (₹)</th>
+                                <th>Net Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(d => `
+                                <tr>
+                                    <td>${new Date(d.date).toLocaleDateString('en-IN')}</td>
+                                    <td>${d.breakfastCount || 0}</td>
+                                    <td>${d.lunchCount || 0}</td>
+                                    <td>${d.dinnerCount || 0}</td>
+                                    <td><strong>${d.maxPeopleFed || 0}</strong></td>
+                                    <td>₹${(d.grossAmount || 0).toLocaleString('en-IN')}</td>
+                                    <td>₹${(d.fineAmount || 0)}</td>
+                                    <td>₹${(d.netAmount || 0)}</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td colspan="5">TOTAL</td>
+                                <td>₹${totalGrossAmount.toLocaleString('en-IN')}</td>
+                                <td>₹${totalFineAmount.toLocaleString('en-IN')}</td>
+                                <td>₹${totalNetAmount.toLocaleString('en-IN')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const element = document.createElement('div');
+            element.innerHTML = content;
+            const opt = {
+                margin: 10,
+                filename: `billing_report_${new Date().toISOString().slice(0, 10)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
         
         function logout() {
             localStorage.removeItem('currentUser');
             window.location.href = 'login.html';
-        }
-
-        // ===== VENDOR FOOD COUNT REPORT FUNCTIONS =====
-        function onVendorCountModeChange() {
-            const mode = document.getElementById('vendor-count-mode').value;
-            document.getElementById('vendor-count-date-ctrl').style.display = mode === 'daily' ? '' : 'none';
-            document.getElementById('vendor-count-week-ctrl').style.display = mode === 'weekly' ? '' : 'none';
-            document.getElementById('vendor-count-month-ctrl').style.display = mode === 'monthly' ? '' : 'none';
-            document.getElementById('vendor-count-custom-ctrl').style.display = mode === 'custom' ? '' : 'none';
-        }
-
-        async function generateVendorCountReport() {
-            const mode = document.getElementById('vendor-count-mode').value;
-            let start = null, end = null;
-            if (mode === 'daily') {
-                const d = document.getElementById('vendor-count-date').value;
-                if (!d) { alert('Select a date'); return; }
-                start = end = d;
-            } else if (mode === 'weekly') {
-                const d = document.getElementById('vendor-count-week').value;
-                if (!d) { alert('Select a week date'); return; }
-                const dt = new Date(d);
-                const day = dt.getDay();
-                const diffToMonday = (day + 6) % 7;
-                const monday = new Date(dt);
-                monday.setDate(dt.getDate() - diffToMonday);
-                const sunday = new Date(monday);
-                sunday.setDate(monday.getDate() + 6);
-                start = monday.toISOString().slice(0,10);
-                end = sunday.toISOString().slice(0,10);
-            } else if (mode === 'monthly') {
-                const m = document.getElementById('vendor-count-month').value;
-                if (!m) { alert('Select a month'); return; }
-                start = m + '-01';
-                const [yy, mm] = m.split('-').map(x => parseInt(x,10));
-                const lastDay = new Date(yy, mm, 0).getDate();
-                end = `${m}-${String(lastDay).padStart(2,'0')}`;
-            } else if (mode === 'custom') {
-                const s = document.getElementById('vendor-count-start').value;
-                const e = document.getElementById('vendor-count-end').value;
-                if (!s || !e) { alert('Select start and end date'); return; }
-                if (s > e) { alert('Start date must be <= end date'); return; }
-                start = s; end = e;
-            }
-
-            try {
-                const counts = await fetch(`/api/food-counts?start=${start}&end=${end}`).then(r => r.ok ? r.json() : []);
-                const quality = await fetch(`/api/food-quality?start=${start}&end=${end}`).then(r => r.ok ? r.json() : {});
-                const fines = JSON.parse(localStorage.getItem('fines') || '[]');
-                
-                renderVendorCountReport(counts, quality, fines);
-                window.__vendorCountData = counts;
-            } catch (e) {
-                console.warn('API fetch failed', e);
-                window.__vendorCountData = [];
-                document.getElementById('vendor-count-body').innerHTML = '<tr><td colspan="7" style="text-align:center;">Error fetching data</td></tr>';
-            }
-        }
-
-        function renderVendorCountReport(counts, quality, fines) {
-            if (!counts || counts.length === 0) {
-                document.getElementById('vendor-count-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">No food count data</td></tr>';
-                document.getElementById('vendor-count-stats').innerHTML = '';
-                return;
-            }
-
-            let totalStudents = 0, totalFaculty = 0;
-            counts.forEach(c => {
-                totalStudents += c.studentCount || 0;
-                totalFaculty += c.facultyCount || 0;
-            });
-
-            const stats = `
-                <div class="stat-box">
-                    <div class="label">Total Records</div>
-                    <div class="value">${counts.length}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Total Students</div>
-                    <div class="value">${totalStudents}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Total Faculty</div>
-                    <div class="value">${totalFaculty}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Total People</div>
-                    <div class="value">${totalStudents + totalFaculty}</div>
-                </div>
-            `;
-            document.getElementById('vendor-count-stats').innerHTML = stats;
-
-            document.getElementById('vendor-count-body').innerHTML = counts.map(c => {
-                const qKey = (c.date, c.mealType);
-                const q = quality[JSON.stringify(qKey)];
-                const qRating = q ? q.avg_rating : '-';
-                const fine = fines.find(f => f.date === c.date && f.meal === c.mealType);
-                const fineAmount = fine ? `₹${fine.amount}` : 'None';
-                const total = (c.studentCount || 0) + (c.facultyCount || 0);
-                return `
-                    <tr>
-                        <td>${new Date(c.date).toLocaleDateString('en-IN')}</td>
-                        <td style="text-transform:capitalize;">${c.mealType}</td>
-                        <td>${c.studentCount}</td>
-                        <td>${c.facultyCount}</td>
-                        <td><strong>${total}</strong></td>
-                        <td><span class="rating-badge">${qRating}/5</span></td>
-                        <td>${fineAmount}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function exportVendorCountCSV() {
-            const data = window.__vendorCountData || [];
-            if (!data.length) { alert('No data to export'); return; }
-            const csv = ['date,meal,studentCount,facultyCount,totalPeople'].concat(data.map(c => {
-                const total = (c.studentCount || 0) + (c.facultyCount || 0);
-                return `${c.date},${c.mealType},${c.studentCount},${c.facultyCount},${total}`;
-            })).join('\n');
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `vendor_food_counts_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        }
-
-        function loadTodayAndNextDayCount() {
-            const today = new Date().toISOString().slice(0,10);
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0,10);
-
-            fetch(`/api/food-counts?start=${today}&end=${today}`)
-                .then(r => r.ok ? r.json() : [])
-                .then(counts => {
-                    const todayMeals = counts.map(c => `${c.mealType}: ${c.studentCount} students, ${c.facultyCount} faculty`).join('<br>');
-                    document.getElementById('today-summary').innerHTML = `<div class="label">Today's Count (${today})</div><div style="margin-top:10px;">${todayMeals || 'No data'}</div>`;
-                })
-                .catch(e => {
-                    document.getElementById('today-summary').innerHTML = '<div class="label">Today\'s Count</div><div style="margin-top:10px; color:#999;">Unable to load</div>';
-                });
-
-            fetch(`/api/food-counts?start=${tomorrow}&end=${tomorrow}`)
-                .then(r => r.ok ? r.json() : [])
-                .then(counts => {
-                    const tomorrowMeals = counts.map(c => `${c.mealType}: ${c.studentCount} students, ${c.facultyCount} faculty`).join('<br>');
-                    document.getElementById('nextday-summary').innerHTML = `<div class="label">Next Day's Count (${tomorrow})</div><div style="margin-top:10px;">${tomorrowMeals || 'No data'}</div>`;
-                })
-                .catch(e => {
-                    document.getElementById('nextday-summary').innerHTML = '<div class="label">Next Day\'s Count</div><div style="margin-top:10px; color:#999;">Unable to load</div>';
-                });
         }
     </script>
 </body>

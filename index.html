@@ -3,60 +3,586 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMC Mess Feedback</title>
+    <title>CMC Mess Feedback Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #003366; --secondary: #f4f4f4; --accent: #ffcc00; }
-        * { transition: all 0.3s ease; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, var(--secondary) 0%, #e8f0f5 100%); color: #333; }
-        header { background: linear-gradient(135deg, var(--primary) 0%, #004d99 100%); color: white; padding: 2rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative; }
-        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .header-content { flex: 1; text-align: center; min-width: 250px; }
-        header img { border-radius: 50%; margin-bottom: 10px; border: 4px solid var(--accent); width: 60px; height: 60px; }
-        header h3 { margin: 0; font-size: 1.1rem; letter-spacing: 2px; font-weight: 700; }
-        header h1 { font-size: 1.5rem; margin: 8px 0 0 0; font-weight: 700; }
-        .admin-btn { background: rgba(255,255,255,0.2); color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; border: 2px solid white; transition: all 0.3s; white-space: nowrap; }
-        .admin-btn:hover { background: white; color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .container { max-width: 800px; margin: 30px auto; padding: 15px; }
-        .user-info { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 5px solid var(--accent); }
-        .user-info h3 { margin: 0 0 20px 0; color: var(--primary); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        .user-info h3::before { content: '👤'; font-size: 1.3rem; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 0; }
-        .form-row input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; font-family: inherit; }
-        .form-row input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(0,51,102,0.2); background: #f8fafc; }
-        .meal-info { background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .meal-info h3 { margin: 0 0 12px 0; color: var(--primary); font-size: 1.3rem; font-weight: 700; }
-        .meal-info p { margin: 8px 0; font-size: 0.95rem; color: #666; }
-        .meal-info .date { font-weight: 600; color: var(--primary); }
-        .item-card { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-left: 5px solid var(--accent); }
-        .item-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); transform: translateY(-2px); }
-        .item-name { font-weight: 700; font-size: 1.3rem; color: var(--primary); margin-bottom: 20px; display: block; }
-        .rating-group { margin-bottom: 20px; }
-        .rating-group label { display: block; font-size: 1rem; margin-bottom: 10px; color: #555; font-weight: 600; }
-        .stars { display: flex; gap: 15px; flex-direction: row-reverse; justify-content: flex-end; }
-        .stars input { display: none; }
-        .stars label { font-size: 2.5rem; color: #ddd; cursor: pointer; transition: all 0.2s; }
-        .stars label:hover { transform: scale(1.25); }
-        .stars input:checked ~ label { color: var(--accent); }
-        .stars label:hover, .stars label:hover ~ label { color: var(--accent); }
-        textarea { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; resize: vertical; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; }
-        textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(0,51,102,0.2); background: #f8fafc; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 700; margin-top: 15px; transition: all 0.3s; }
-        .btn-submit { background: linear-gradient(135deg, var(--primary), #004d99); color: white; }
-        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,51,102,0.4); }
-        .btn-submit:active { transform: translateY(-1px); }
-        .btn-add { background: #e0e0e0; color: #333; margin-bottom: 20px; }
-        .btn-add:hover { background: #d0d0d0; transform: translateY(-2px); }
-        #thank-you { display: none; text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        #thank-you .icon { font-size: 5rem; margin-bottom: 20px; animation: bounce 0.6s ease-in-out; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        #thank-you h2 { color: var(--primary); margin-bottom: 12px; font-size: 2rem; }
-        #thank-you p { font-size: 1.1rem; margin-bottom: 25px; color: #666; }
-        @media (max-width: 600px) { 
-            .form-row { grid-template-columns: 1fr; }
-            header { flex-direction: column; }
-            .admin-btn { width: 100%; text-align: center; }
-            .stars { gap: 10px; }
-            .stars label { font-size: 2rem; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #dbeafe;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --spacing-1: 4px;
+            --spacing-2: 8px;
+            --spacing-3: 12px;
+            --spacing-4: 16px;
+            --spacing-5: 20px;
+            --spacing-6: 24px;
+            --spacing-8: 32px;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: var(--spacing-8) var(--spacing-5);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-4);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-text h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .header-text p {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        .admin-btn {
+            background: white;
+            color: var(--primary);
+            padding: var(--spacing-3) var(--spacing-4);
+            border: 1.5px solid var(--primary);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .admin-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--spacing-5);
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-100);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+            padding-bottom: var(--spacing-4);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        /* Form Styles */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            padding: var(--spacing-3) var(--spacing-4);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        /* Meal Header */
+        .meal-info {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-5);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-5);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .meal-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .meal-info h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .meal-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-2) var(--spacing-3);
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .meal-info p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* Item Card */
+        .item-card {
+            background: var(--gray-50);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-5);
+            margin-bottom: var(--spacing-4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .item-card:hover {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .item-card.error {
+            border-color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .item-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-4);
+            display: block;
+        }
+
+        .item-name-input {
+            width: 100%;
+            padding: var(--spacing-3) var(--spacing-4);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-4);
+            background: white !important;
+        }
+
+        /* Rating Styles */
+        .rating-section {
+            margin-bottom: var(--spacing-4);
+        }
+
+        .rating-label {
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            margin-bottom: var(--spacing-3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+
+        .rating-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-2);
+        }
+
+        .rating-btn {
+            padding: var(--spacing-3) var(--spacing-2);
+            border: 1.5px solid var(--gray-300);
+            background: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+
+        .rating-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .rating-btn.selected {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .rating-value {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .rating-emoji {
+            font-size: 18px;
+        }
+
+        /* Rating Grid */
+        .ratings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .item-card textarea {
+            width: 100%;
+            padding: var(--spacing-3) var(--spacing-4);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        /* Button Styles */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-6);
+        }
+
+        .btn {
+            padding: var(--spacing-4) var(--spacing-5);
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+
+        .btn-add {
+            width: 100%;
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border: 1.5px dashed var(--gray-300);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .btn-add:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* Thank You Message */
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: var(--spacing-8) var(--spacing-6);
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--gray-100);
+            animation: slideUp 0.4s ease;
+        }
+
+        .thank-you.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .thank-you-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spacing-5);
+            background: linear-gradient(135deg, var(--success) 0%, var(--secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .thank-you h2 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--gray-900);
+            font-size: 28px;
+            margin-bottom: var(--spacing-3);
+            font-weight: 700;
+        }
+
+        .thank-you p {
+            color: var(--gray-600);
+            font-size: 15px;
+            margin-bottom: var(--spacing-5);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row,
+            .ratings-grid,
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: var(--spacing-4);
+            }
+
+            .meal-info-header {
+                flex-direction: column;
+            }
+
+            .container {
+                padding: var(--spacing-4);
+            }
+
+            .card {
+                padding: var(--spacing-4);
+            }
+
+            .meal-info {
+                padding: var(--spacing-4);
+            }
+
+            .rating-options {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .header-text h1 {
+                font-size: 18px;
+            }
+
+            .meal-info h3 {
+                font-size: 20px;
+            }
+
+            .item-name {
+                font-size: 15px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Error State */
+        .error-message {
+            background: #fef2f2;
+            color: var(--danger);
+            padding: var(--spacing-3) var(--spacing-4);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            margin-bottom: var(--spacing-4);
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Success State */
+        .success-message {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: var(--spacing-3) var(--spacing-4);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            margin-bottom: var(--spacing-4);
+            border-left: 4px solid var(--success);
         }
     </style>
 </head>
@@ -64,75 +590,118 @@
 
 <header>
     <div class="header-content">
-        <img src="./assets/logo.png" alt="Logo">
-        <h3>COIMBATORE MARINE COLLEGE</h3>
-        <h1>Mess Feedback Portal</h1>
+        <div class="header-left">
+            <div class="logo-icon">CMC</div>
+            <div class="header-text">
+                <h1>Mess Feedback</h1>
+                <p>Coimbatore Marine College</p>
+            </div>
+        </div>
+        <a href="./login.html?force=true" class="admin-btn">Admin Login</a>
     </div>
-    <a href="./login.html?force=true" class="admin-btn">🔐 Admin Login</a>
 </header>
 
-<div class="container" id="form-container">
-    <div class="user-info">
-        <h3>Your Information</h3>
-        <div class="form-row">
-            <input type="text" id="student-name" placeholder="Full Name" required>
-            <input type="text" id="student-roll" placeholder="Roll Number" required>
-        </div>
-    </div>
-
-    <div class="meal-info">
-        <h3 id="current-meal-title">Loading Meal...</h3>
-        <p class="date" id="current-date"></p>
-        <p style="margin-top: 15px; font-size: 0.9rem;">⭐ Rate each item on Taste, Quality, Quantity & Cleanliness</p>
-    </div>
-
-    <form id="feedback-form">
-        <div id="menu-items-container">
-            <!-- Items injected by JS -->
+<div class="container">
+    <div id="form-container">
+        <!-- Meal Information -->
+        <div class="meal-info">
+            <div class="meal-info-header">
+                <div>
+                    <h3 id="meal-title">Loading...</h3>
+                    <p id="meal-date"></p>
+                </div>
+                <div class="meal-badge" id="meal-type-badge">Breakfast</div>
+            </div>
         </div>
 
-        <button type="button" class="btn btn-add" onclick="addNewItem()">➕ Add Other Item</button>
-        <button type="submit" class="btn btn-submit">✓ Submit Feedback</button>
-    </form>
-</div>
+        <form id="feedback-form">
+            <!-- Student Information -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👤</div>
+                    <h2 class="card-title">Your Information</h2>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-name">Full Name *</label>
+                        <input type="text" id="student-name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-roll">Roll Number *</label>
+                        <input type="text" id="student-roll" placeholder="e.g., 21MC001" required>
+                    </div>
+                </div>
+            </div>
 
-<div id="thank-you" class="container">
-    <div class="icon">✅</div>
-    <h2>Thank You!</h2>
-    <p>Your feedback helps us improve the food quality at CMC. We appreciate your input!</p>
-    <button class="btn btn-submit" onclick="location.reload()">📝 Submit Another Feedback</button>
+            <!-- Menu Items -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🍽️</div>
+                    <h2 class="card-title">Rate Today's Menu</h2>
+                </div>
+                <div id="menu-container"></div>
+                <button type="button" class="btn btn-add" onclick="addCustomItem()">+ Add Other Item</button>
+            </div>
+
+            <!-- Additional Comments -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💬</div>
+                    <h2 class="card-title">Additional Feedback</h2>
+                </div>
+                <div class="form-group">
+                    <label for="overall-comment">Your Comments</label>
+                    <textarea id="overall-comment" placeholder="Share any additional feedback or suggestions..."></textarea>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">✓ Submit Feedback</button>
+                <button type="reset" class="btn btn-secondary">↻ Clear Form</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Thank You Message -->
+    <div class="thank-you" id="thank-you">
+        <div class="thank-you-icon">✓</div>
+        <h2>Thank You!</h2>
+        <p>Your feedback has been successfully submitted. We appreciate your input and will use it to improve our mess services.</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="width: 100%;">📝 Submit Another Feedback</button>
+    </div>
 </div>
 
 <script>
     const menuData = {
         "Monday": { 
             Breakfast: ["Idly", "Vada", "Sambar", "Chutney", "Pongal", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Cucumber"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Appalam"],
             Dinner: ["Uthappam", "Sambar", "Chutney", "Boiled Egg", "Coconut Rice"]
         },
         "Tuesday": {
             Breakfast: ["Poori", "Chana Masala", "Poha", "Namkeen", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Cucumber"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Appalam"],
             Dinner: ["Chappathi", "Green Gram Curry", "Fish", "Fried Rice"]
         },
         "Wednesday": {
             Breakfast: ["Dosa", "Sambar", "Chutney", "Boiled Egg", "Lemon Rice", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Cucumber"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Appalam"],
             Dinner: ["Kal Dosa", "Sambar", "Chutney", "Tomato Rice"]
         },
         "Thursday": {
             Breakfast: ["Idiyappam", "Kadalai Curry", "Rava Upma", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Cucumber"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Appalam"],
             Dinner: ["Chappathi", "Channa Masala", "Chicken Varuval", "Jeera Rice"]
         },
         "Friday": {
             Breakfast: ["Idly", "Sambar", "Chutney", "Puliyodharai", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Cucumber"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Appalam"],
             Dinner: ["Dosa", "Sambar", "Chutney", "Soya Rice"]
         },
         "Saturday": {
             Breakfast: ["Uthappam", "Sambar", "Chutney", "Pongal", "Coffee"],
-            Lunch: ["White Rice", "Sambar/Kootu", "Chapathi", "Kurma/Gravy", "Rasam", "Buttermilk", "Pickle", "Appalam", "Fish"],
+            Lunch: ["White Rice", "Sambar", "Chapathi", "Kurma", "Rasam", "Buttermilk", "Fish"],
             Dinner: ["Chappathi", "Rajma Curry", "Sambar Rice"]
         },
         "Sunday": {
@@ -149,49 +718,127 @@
         const min = now.getMinutes();
         const currentTime = hour + (min/60);
 
-        let meal = "Lunch"; // Default
+        let meal = "Lunch";
         if (currentTime >= 6 && currentTime < 10) meal = "Breakfast";
         else if (currentTime >= 10 && currentTime < 15) meal = "Lunch";
         else meal = "Dinner";
 
-        return { day, meal, dateStr: now.toDateString() };
+        return { 
+            day, 
+            meal, 
+            dateStr: now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) 
+        };
     }
 
     const { day, meal, dateStr } = getMealInfo();
-    document.getElementById('current-meal-title').innerText = `${day} - ${meal}`;
-    document.getElementById('current-date').innerText = dateStr;
+    document.getElementById('meal-title').textContent = day;
+    document.getElementById('meal-date').textContent = dateStr;
+    document.getElementById('meal-type-badge').textContent = meal;
 
     function renderItem(itemName, isCustom = false) {
         const id = isCustom ? 'custom_' + Date.now() : itemName.replace(/\s+/g, '_');
         return `
-        <div class="item-card" data-name="${itemName}">
-            ${isCustom ? `<input type="text" placeholder="Enter Item Name" class="item-name" value="${itemName}" style="width:100%; border:1px solid #ddd; padding:5px;">` : `<span class="item-name">${itemName}</span>`}
+        <div class="item-card" data-item-id="${id}">
+            ${isCustom ? `<input type="text" class="item-name-input item-name" placeholder="Enter item name" value="${itemName}">` : `<span class="item-name">${itemName}</span>`}
             
-            ${['Taste', 'Quality', 'Quantity', 'Cleanliness'].map(criteria => `
-                <div class="rating-group">
-                    <label>${criteria}</label>
-                    <div class="stars">
-                        ${[5,4,3,2,1].map(num => `
-                            <input type="radio" name="${id}_${criteria}" id="${id}_${criteria}_${num}" value="${num}" required>
-                            <label for="${id}_${criteria}_${num}">★</label>
-                        `).join('')}
+            <div class="ratings-grid">
+                <div class="rating-section">
+                    <label class="rating-label">👅 Taste</label>
+                    <div class="rating-options">
+                        <button type="button" class="rating-btn taste-btn" data-value="1" data-id="${id}">
+                            <span class="rating-emoji">😞</span>
+                            <span class="rating-value">Poor</span>
+                        </button>
+                        <button type="button" class="rating-btn taste-btn" data-value="2" data-id="${id}">
+                            <span class="rating-emoji">😐</span>
+                            <span class="rating-value">Avg</span>
+                        </button>
+                        <button type="button" class="rating-btn taste-btn" data-value="3" data-id="${id}">
+                            <span class="rating-emoji">🙂</span>
+                            <span class="rating-value">Good</span>
+                        </button>
+                        <button type="button" class="rating-btn taste-btn" data-value="4" data-id="${id}">
+                            <span class="rating-emoji">😋</span>
+                            <span class="rating-value">Great</span>
+                        </button>
+                        <button type="button" class="rating-btn taste-btn" data-value="5" data-id="${id}">
+                            <span class="rating-emoji">🤩</span>
+                            <span class="rating-value">Excel</span>
+                        </button>
                     </div>
+                    <input type="hidden" name="${id}_taste" class="taste-value" value="0">
                 </div>
-            `).join('')}
-            <textarea placeholder="Optional comments for ${itemName}..." rows="2"></textarea>
+                
+                <div class="rating-section">
+                    <label class="rating-label">✨ Cleanliness</label>
+                    <div class="rating-options">
+                        <button type="button" class="rating-btn clean-btn" data-value="1" data-id="${id}">
+                            <span class="rating-emoji">🤢</span>
+                            <span class="rating-value">Poor</span>
+                        </button>
+                        <button type="button" class="rating-btn clean-btn" data-value="2" data-id="${id}">
+                            <span class="rating-emoji">😷</span>
+                            <span class="rating-value">Fair</span>
+                        </button>
+                        <button type="button" class="rating-btn clean-btn" data-value="3" data-id="${id}">
+                            <span class="rating-emoji">😐</span>
+                            <span class="rating-value">Good</span>
+                        </button>
+                        <button type="button" class="rating-btn clean-btn" data-value="4" data-id="${id}">
+                            <span class="rating-emoji">👍</span>
+                            <span class="rating-value">Very</span>
+                        </button>
+                        <button type="button" class="rating-btn clean-btn" data-value="5" data-id="${id}">
+                            <span class="rating-emoji">🌟</span>
+                            <span class="rating-value">Excel</span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="${id}_cleanliness" class="cleanliness-value" value="0">
+                </div>
+            </div>
+
+            <textarea placeholder="Any specific comments about this item..." style="margin-top: var(--spacing-4);"></textarea>
         </div>`;
     }
 
-    const currentMenu = menuData[day][meal] || [];
-    const container = document.getElementById('menu-items-container');
-    currentMenu.forEach(item => { container.innerHTML += renderItem(item); });
+    function setupItemRatings() {
+        document.querySelectorAll('.taste-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                document.querySelectorAll(`.taste-btn[data-id="${id}"]`).forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.querySelector(`input[name="${id}_taste"]`).value = btn.dataset.value;
+            });
+        });
 
-    function addNewItem() {
-        container.insertAdjacentHTML('beforeend', renderItem('', true));
+        document.querySelectorAll('.clean-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                document.querySelectorAll(`.clean-btn[data-id="${id}"]`).forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.querySelector(`input[name="${id}_cleanliness"]`).value = btn.dataset.value;
+            });
+        });
     }
 
-    document.getElementById('feedback-form').onsubmit = (e) => {
+    const currentMenu = menuData[day][meal] || [];
+    const container = document.getElementById('menu-container');
+    currentMenu.forEach(item => {
+        container.innerHTML += renderItem(item);
+    });
+    setupItemRatings();
+
+    function addCustomItem() {
+        const newItemHtml = renderItem('', true);
+        container.insertAdjacentHTML('beforeend', newItemHtml);
+        setupItemRatings();
+    }
+
+    document.getElementById('feedback-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const name = document.getElementById('student-name').value.trim();
         const roll = document.getElementById('student-roll').value.trim();
         
@@ -204,65 +851,62 @@
         let hasError = false;
 
         const feedbackItems = Array.from(cards).map(card => {
-            const nameInput = card.querySelector('.item-name');
-            const itemName = nameInput.value || nameInput.innerText;
+            const itemNameElement = card.querySelector('.item-name');
+            const itemInput = card.querySelector('.item-name-input');
+            const itemName = itemInput ? itemInput.value : (itemNameElement ? itemNameElement.textContent : 'Unknown');
             
-            const getVal = (crit) => {
-                const checked = card.querySelector(`input[name$="_${crit}"]:checked`);
-                if (!checked) {
-                    hasError = true;
-                    card.style.borderLeft = '4px solid #dc3545';
-                }
-                return checked?.value || 0;
-            };
-            
+            const tasteValue = card.querySelector('.taste-value').value;
+            const cleanValue = card.querySelector('.cleanliness-value').value;
+
+            if (!tasteValue || tasteValue === '0' || !cleanValue || cleanValue === '0') {
+                hasError = true;
+                card.classList.add('error');
+            }
+
             return {
                 item_name: itemName,
-                taste: parseInt(getVal('Taste')),
-                quality: parseInt(getVal('Quality')),
-                quantity: parseInt(getVal('Quantity')),
-                cleanliness: parseInt(getVal('Cleanliness')),
-                comment: card.querySelector('textarea').value
+                taste: parseInt(tasteValue) || 0,
+                cleanliness: parseInt(cleanValue) || 0
             };
         });
 
         if (hasError) {
-            alert('⚠️ Please rate all items on all criteria (Taste, Quality, Quantity, Cleanliness)');
+            alert('⚠️ Please rate all items on Taste and Cleanliness');
             return;
         }
-
-        // Reset borders
-        cards.forEach(card => {
-            card.style.borderLeft = '4px solid var(--accent)';
-        });
 
         const submission = {
             student_name: name,
             student_roll: roll,
-            datetime: new Date().toISOString(),
-            date_readable: new Date().toLocaleDateString(),
-            time_readable: new Date().toLocaleTimeString(),
+            feedback_date: new Date().toISOString().split('T')[0],
             meal_type: meal,
-            day: day,
-            items: feedbackItems,
-            submitted_at: new Date().toLocaleString()
+            overall_comment: document.getElementById('overall-comment').value,
+            items: feedbackItems
         };
 
         try {
-            const existingData = JSON.parse(localStorage.getItem('cmc_feedback') || '[]');
-            existingData.push(submission);
-            localStorage.setItem('cmc_feedback', JSON.stringify(existingData));
-            
-            console.log('✅ Feedback submitted successfully!', submission);
-            console.log('📊 Total submissions:', existingData.length);
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submission)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to save feedback');
+            }
+
+            const result = await response.json();
+            console.log('✓ Feedback submitted successfully!', result);
 
             document.getElementById('form-container').style.display = 'none';
-            document.getElementById('thank-you').style.display = 'block';
+            document.getElementById('thank-you').classList.add('show');
         } catch (error) {
-            console.error('❌ Error saving feedback:', error);
-            alert('❌ Error saving feedback. Please try again.');
+            console.error('Error saving feedback:', error);
+            alert('Error saving feedback: ' + error.message);
         }
-    };
+    });
 </script>
+
 </body>
 </html>
